@@ -8,6 +8,7 @@ import { RIcon } from "~/lib/atoms/RIcon";
 import { RSkeleton } from "~/lib/atoms/RSkeleton";
 import { RTooltip } from "~/lib/atoms/RTooltip";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { formatTime } from "~/lib/utils/date";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 import { AssetIcon } from "~/templates/AssetIcon";
 
@@ -29,12 +30,6 @@ const SKELETON_ROWS = 3;
 
 const ASSETS_HINT =
   "All assets shown are strictly those held in your on-chain wallet. It does not include assets and stables held in orders.";
-
-const formatTime = (timestamp: number) =>
-  new Date(timestamp).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 
 type HomeViewProps = {
   address: string;
@@ -168,7 +163,7 @@ export function HomeView({
           </div>
           {portfolioUpdatedAt ? (
             <RText color="neutral-700" size="body-s">
-              Updated {formatTime(portfolioUpdatedAt)}
+              Updated {formatTime(portfolioUpdatedAt, { withSeconds: false })}
             </RText>
           ) : null}
         </div>
