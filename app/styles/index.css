@@ -38,6 +38,17 @@
   font-display: swap;
 }
 
+/* Password mask: the browser's mask dots (• ● ∙ ◦) drawn as Inter's
+   asterisk, as in Figma; every other character falls back to Inter */
+@font-face {
+  font-family: "RPasswordMask";
+  src: url("/fonts/RPasswordMask/RPasswordMask.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+  unicode-range: U+2022, U+2219, U+25CF, U+25E6;
+}
+
 @font-face {
   font-family: "Inter";
   src: url("/fonts/Inter/Inter-Regular.woff2") format("woff2");
@@ -619,4 +630,25 @@ input[type="number"] {
 }
 .remove-scrollbar::-webkit-scrollbar {
   display: none; /* Older Safari and Chromium */
+}
+
+/* The TX HASH tooltips (OperationHash), also used by the header wallet panel */
+.tippy-box[data-theme~="operation-hash"] {
+  color: var(--r-color-neutral-black);
+  background: var(--r-color-neutral-white);
+  border-radius: var(--r-radius-sm);
+  box-shadow: var(--r-shadow-tooltip);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  font-weight: var(--r-font-weight-regular);
+  line-height: var(--r-line-height-body-s);
+}
+
+.tippy-box[data-theme~="operation-hash"] .tippy-content {
+  padding: var(--r-space-2) var(--r-space-3);
+}
+
+.tippy-box[data-theme~="operation-hash"][data-placement^="top"]
+  > .tippy-arrow::before {
+  border-top-color: var(--r-color-neutral-white);
 }

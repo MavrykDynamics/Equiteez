@@ -19,6 +19,7 @@ import type {
 } from "~/contracts/actions.type";
 import { EstimatedBatchCall, WalletErrorPayload } from "../error.type";
 import { BatchOperationKindType } from "~/contracts/types";
+import { sendAndConfirmBatch } from "~/contracts/execution";
 
 type EstimationResultParams = {
   callback?: () => void;
@@ -121,21 +122,15 @@ export async function getEstimationBatchResult(
   };
 }
 
-// Call the actual contract batch operation
+// Call the actual contract batch operation: optional MVRK check, send,
+// confirm and require every result to be applied
 export async function sendContractBatchOperation(
   mavryk: MavrykToolkit,
   batchArr: BatchOperationKindType,
   callbacks: ContractActionLifecycleCallbacks = {}
 ) {
   try {
-    const batchOp = await mavryk.wallet.batch(batchArr).send();
-    callbacks.onTransactionSubmitted?.();
-    const confirmation = await batchOp.confirmation();
-    const level = confirmation?.block.header.level;
-
-    if (typeof level === "number") {
-      callbacks.onTransactionConfirmed?.({ level });
-    }
+    await sendAndConfirmBatch(mavryk, batchArr, callbacks);
   } catch (e) {
     console.error("Error during executing operation");
     throw e;

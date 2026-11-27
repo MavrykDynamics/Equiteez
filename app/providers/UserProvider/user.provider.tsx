@@ -24,7 +24,6 @@ import {
 } from "./user.provider.types";
 import { useWalletContext } from "../WalletProvider/wallet.provider";
 import { useAppContext } from "../AppProvider/AppProvider";
-import type { AccountInfo } from "@mavrykdynamics/beacon-dapp";
 import { useUserSockets } from "./helpers/sockets";
 import { useTokensContext } from "../TokensProvider/tokens.provider";
 import { useQuery } from "@apollo/client/index";
@@ -35,6 +34,12 @@ import {
   getHasOrdersForAddress,
   getIsKycedForAddress,
 } from "./helpers/userStatus.helpers";
+import { reloadWhenHidden } from "~/lib/utils/reloadWhenHidden";
+import {
+  getSessionSyncAction,
+  isSessionSyncSettled,
+  type SessionSyncSnapshot,
+} from "./helpers/sessionSync";
 import type { UserAccountStatusQuery } from "~/utils/__generated__/graphql";
 
 export const userContext = React.createContext<UserContext>(undefined!);
@@ -48,16 +53,16 @@ type Props = {
  * 1. on changing user do not reopen socket, just update filter (invoke), currently hadn't found any example of it
  */
 export const UserProvider = ({ children }: Props) => {
-  const { dapp } = useWalletContext();
+  const wallet = useWalletContext();
+  const {
+    identity: walletIdentity,
+    isLoading: isWalletLoading,
+    phase: walletPhase,
+    noWalletReason,
+  } = wallet;
   const { IS_WEB } = useAppContext();
   const { tokensMetadata } = useTokensContext();
 
-  /**
-   * when undefined -> isLoading is true
-   * when null, there isn't active account -> isLoading false
-   * when active account was received -> isLoading false
-   */
-  const [account, setAccount] = useState<AccountInfo | null | undefined>();
   const [userCtxState, setUserCtxState] =
     useState<UserContextStateType>(DEFAULT_USER);
   const [userTzktTokens, setUserTzktTokens] = useState<UserTzKtTokenBalances>(
@@ -67,7 +72,8 @@ export const UserProvider = ({ children }: Props) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [tzktBalancesLoading, setIsTzktBalancesLoading] = useState(false);
   const [isUserLoading, setUserLoading] = useState(true);
-  const accountAddress = account?.address ?? null;
+  // The connected wallet's mv1 (Mavryk Wallet or email wallet)
+  const accountAddress = walletIdentity?.address ?? null;
   const {
     authenticatedWalletAddress,
     logout,
@@ -79,7 +85,22 @@ export const UserProvider = ({ children }: Props) => {
     isAuthenticated && authenticatedWalletAddress
       ? authenticatedWalletAddress
       : null;
-  const isSwitchingAccountRef = useRef(false);
+  // connect → login or an account switch is running: the wallet may already
+  // be connected while the RWA session is not there yet
+  const [isAuthFlowActive, setIsAuthFlowActive] = useState(false);
+  const authFlowCountRef = useRef(0);
+
+  const runAuthFlow = useCallback(async (flow: () => Promise<void>) => {
+    authFlowCountRef.current += 1;
+    setIsAuthFlowActive(true);
+
+    try {
+      await flow();
+    } finally {
+      authFlowCountRef.current -= 1;
+      if (authFlowCountRef.current === 0) setIsAuthFlowActive(false);
+    }
+  }, []);
 
   // open socket for tzkt without listeners, cuz don't have user address to subscribe
 
@@ -99,55 +120,77 @@ export const UserProvider = ({ children }: Props) => {
   // returns methods to communicate with wallet and get data about account
   // as well as tzkt sockets
   const { connect, signOut, changeUser } = useUserApi({
-    DAPP_INSTANCE: dapp,
+    wallet,
     setUserLoading,
     setUserCtxState,
     tzktSocket,
     setTzktSocket,
   });
-  const switchAccount = useCallback(async () => {
-    isSwitchingAccountRef.current = true;
-
+  /**
+   * Signs in to RWA with the wallet this tab just connected. If that fails
+   * (e.g. the signature was declined), the wallet goes too, shared state
+   * included, so it is not restored on every load without a session.
+   */
+  const loginOrDropWallet = useCallback(async () => {
     try {
-      await changeUser();
       await login();
-    } finally {
-      isSwitchingAccountRef.current = false;
+    } catch (error) {
+      await signOut({ keepProviderSession: true });
+      throw error;
     }
-  }, [changeUser, login]);
+  }, [login, signOut]);
 
-  const connectAndLogin = useCallback(async () => {
-    await connect();
-    await login();
-  }, [connect, login]);
+  const switchAccount = useCallback(
+    () =>
+      runAuthFlow(async () => {
+        await changeUser();
+        await loginOrDropWallet();
+      }),
+    [changeUser, loginOrDropWallet, runAuthFlow]
+  );
 
-  const disconnectAndLogout = useCallback(async () => {
-    await signOut();
-    await logout();
-  }, [logout, signOut]);
+  const connectAndLogin = useCallback(
+    () =>
+      runAuthFlow(async () => {
+        await connect();
+        await loginOrDropWallet();
+      }),
+    [connect, loginOrDropWallet, runAuthFlow]
+  );
 
-  // Listening for active account changes with beacon
+  /**
+   * Connects with `connectWallet` (e.g. the email wallet's code check), then
+   * signs in to RWA with the connected wallet. A step that returns false did
+   * not connect (e.g. an email is needed first): no sign-in then.
+   */
+  const connectWithWallet = useCallback(
+    (connectWallet: () => Promise<unknown>) =>
+      runAuthFlow(async () => {
+        if ((await connectWallet()) === false) return;
+        await loginOrDropWallet();
+      }),
+    [loginOrDropWallet, runAuthFlow]
+  );
+
+  /**
+   * Signs out of the wallet and RWA. The Sign out button ends the Dynamic
+   * session too; switching wallets keeps it (keepProviderSession).
+   */
+  const disconnectAndLogout = useCallback(
+    (options: { keepProviderSession?: boolean } = {}) =>
+      // As an auth flow: between the two steps the RWA session has no wallet,
+      // and the session sync must not log it out a second time
+      runAuthFlow(async () => {
+        await signOut(options);
+        await logout();
+      }),
+    [logout, runAuthFlow, signOut]
+  );
+
+  // The wallet provider restores the previous session on load
   useEffect(() => {
-    if (IS_WEB && dapp) {
-      let isMounted = true;
-
-      (async function () {
-        try {
-          await dapp.listenToActiveAccount((activeAccount) => {
-            if (isMounted) setAccount(activeAccount);
-          });
-        } catch (err) {
-          console.log(err);
-        } finally {
-          if (isMounted) setUserLoading(false);
-        }
-      })();
-
-      return () => {
-        isMounted = false;
-      };
-    }
-  }, [IS_WEB, dapp]);
+    setUserLoading(isWalletLoading);
+  }, [isWalletLoading]);
 
   useEffect(() => {
     if (isAuthLoading) return;
@@ -255,8 +298,15 @@ export const UserProvider = ({ children }: Props) => {
   useEffect(() => {
     if (!IS_WEB) return;
 
+    // The RWA session ended (expired or signed out in another tab): drop the
+    // wallet here but keep the Dynamic session, so signing in needs no code
     const onAuthExpired = () => {
-      void signOut();
+      // A sign-in running here makes a new session: another tab's sign-out
+      // (e.g. it lost the wallet this sign-in replaces) must not undo it
+      if (authFlowCountRef.current > 0) return;
+      // Shared state (Mavryk Wallet's active account, the saved wallet
+      // choice) is left alone: clearing it would sign out every other tab
+      void signOut({ keepProviderSession: true, keepSharedState: true });
     };
 
     window.addEventListener(AUTH_EXPIRED_EVENT, onAuthExpired);
@@ -266,28 +316,68 @@ export const UserProvider = ({ children }: Props) => {
     };
   }, [IS_WEB, signOut]);
 
+  // This tab's state at the previous settled sync check
+  const previousSyncRef = useRef<SessionSyncSnapshot | null>(null);
+  // Another tab signed in while this one had no wallet: reload unseen to
+  // pick it up
+  const [shouldReloadForOtherTab, setShouldReloadForOtherTab] = useState(false);
+
   useEffect(() => {
-    if (!IS_WEB || isAuthLoading || isAuthenticated) return;
-    if (!accountAddress) return;
+    const input = {
+      isWeb: IS_WEB,
+      isAuthLoading,
+      isAuthenticated,
+      isAuthFlowActive,
+      isWalletBusy: walletPhase === "restoring" || walletPhase === "connecting",
+      accountAddress,
+      authenticatedWalletAddress,
+      noWalletReason,
+      previous: previousSyncRef.current,
+    };
 
-    void signOut();
-  }, [IS_WEB, accountAddress, isAuthenticated, isAuthLoading, signOut]);
+    if (!isSessionSyncSettled(input)) return;
 
-  useEffect(() => {
-    if (!IS_WEB || isAuthLoading || !isAuthenticated) return;
-    if (isSwitchingAccountRef.current) return;
-    if (!accountAddress || !authenticatedWalletAddress) return;
-    if (accountAddress === authenticatedWalletAddress) return;
+    const action = getSessionSyncAction(input);
+    // A released wallet counts as gone already, so the next check does not
+    // take its absence for a lost wallet
+    previousSyncRef.current = {
+      accountAddress: action === "release-wallet" ? null : accountAddress,
+      authenticatedWalletAddress,
+    };
+    // Once due, the reload stays due: whatever happens meanwhile, the reload
+    // reads the current state
+    if (action === "reload-tab" || action === "release-wallet") {
+      setShouldReloadForOtherTab(true);
+    }
 
-    void logout();
+    if (action === "release-wallet") {
+      void signOut({ keepProviderSession: true, keepSharedState: true });
+    } else if (action === "disconnect-wallet") {
+      // The wallet may have come from another tab mid sign-in (Beacon's
+      // active account is shared): drop it here only. A failed sign-in in
+      // this tab clears the shared state itself (loginOrDropWallet).
+      void signOut({ keepProviderSession: true, keepSharedState: true });
+    } else if (action === "logout-rwa") {
+      void logout();
+    }
   }, [
     IS_WEB,
     accountAddress,
     authenticatedWalletAddress,
-    isAuthenticated,
+    isAuthFlowActive,
     isAuthLoading,
+    isAuthenticated,
     logout,
+    noWalletReason,
+    signOut,
+    walletPhase,
   ]);
+
+  useEffect(() => {
+    if (!shouldReloadForOtherTab) return;
+
+    return reloadWhenHidden();
+  }, [shouldReloadForOtherTab]);
 
   const providerValue = useMemo(() => {
     const isLoading =
@@ -303,6 +393,7 @@ export const UserProvider = ({ children }: Props) => {
       },
       isLoading,
       connect: connectAndLogin,
+      connectWithWallet,
       refetchUserAccountStatus,
       signOut: disconnectAndLogout,
       changeUser: switchAccount,
@@ -315,6 +406,7 @@ export const UserProvider = ({ children }: Props) => {
     userTzktTokens.userAddress,
     userTzktTokens.tokens,
     connectAndLogin,
+    connectWithWallet,
     refetchUserAccountStatus,
     disconnectAndLogout,
     switchAccount,

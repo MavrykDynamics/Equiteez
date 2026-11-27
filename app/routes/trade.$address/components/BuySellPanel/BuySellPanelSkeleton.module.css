@@ -193,23 +193,3 @@
   margin-top: var(--r-space-4);
 }
 
-.mobileNotice {
-  display: none;
-  width: 200px;
-  height: 18px;
-  margin: var(--r-space-4) auto 0;
-}
-
-/* Mobile card (≤ 1000px): the button replaced by the view-only hint */
-@media (--media-tablet) {
-  .button {
-    display: none;
-  }
-
-  /* The loaded form content ends 12px below the collapsed summary, then the
-     notice's own 16px margin */
-  .mobileNotice {
-    display: block;
-    margin-top: calc(var(--r-space-4) + 12px);
-  }
-}

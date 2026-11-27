@@ -10,19 +10,29 @@ import styles from "../RDepositFundsModal.module.css";
 
 type ReceiveViewProps = {
   mavrykAddress: string;
+  /** Replaces the default text, which points to the modal's Bridge tab */
+  description?: string;
+  /** false outside the deposit modal's tabs */
+  isTabPanel?: boolean;
 };
 
-export function ReceiveView({ mavrykAddress }: ReceiveViewProps) {
+export function ReceiveView({
+  mavrykAddress,
+  description,
+  isTabPanel = true,
+}: ReceiveViewProps) {
   return (
-    <div className={styles.receivePanel} role="tabpanel">
+    <div
+      className={styles.receivePanel}
+      role={isTabPanel ? "tabpanel" : undefined}
+    >
       <RText
         className={styles.receiveDescription}
         color="neutral-600"
         size="body-sm"
       >
-        Send USDT from another Mavryk Wallet straight to this address. This is
-        for assets already on Mavryk. To move funds from Ethereum, use the
-        Bridge tab.
+        {description ??
+          "Send USDT from another Mavryk Wallet straight to this address. This is for assets already on Mavryk. To move funds from Ethereum, use the Bridge tab."}
       </RText>
       <div className={styles.addressBlock}>
         <div className={styles.qrCode}>

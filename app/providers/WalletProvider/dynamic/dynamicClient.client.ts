@@ -1,0 +1,1178 @@
+/**
+ * Dynamic embedded wallet: SDK loading, email OTP, wallet selection/creation,
+ * the single digest-signing transport and the actions behind a fresh identity
+ * check (private key export, passkeys). Browser-only.
+ *
+ * Every function takes the client explicitly, so the provider owns the
+ * lifecycle and tests can pass a fake. See docs/dynamic-wallet.md §3 and §15.
+ */
+import {
+  base58SignatureToSig64,
+  bytesToHex,
+  decodeHex,
+  deriveMavrykKeys,
+  DIGEST_LENGTH,
+  ED25519_SIGNATURE_LENGTH,
+  InvalidKeyMaterialError,
+  type MavrykKeys,
+  verifyDigestSignature,
+} from "~/lib/mavryk/keys";
+import { reloadWhenHidden } from "~/lib/utils/reloadWhenHidden";
+
+import { getDynamicEnvironmentId } from "./dynamic.config";
+import {
+  DynamicIdentityChangedError,
+  DynamicInitError,
+  DynamicNotAuthenticatedError,
+  DynamicNotConfiguredError,
+  DynamicPasswordAlreadySetError,
+  DynamicSecondFactorRequiredError,
+  DynamicSessionExpiredError,
+  DynamicWalletLockedError,
+  DynamicWalletNotFoundError,
+  DynamicWrongCodeError,
+  DynamicWrongPasswordError,
+  GoogleSignInError,
+  IdentityCheckUnavailableError,
+  LocalSignatureVerificationError,
+  MultipleDynamicWalletsError,
+} from "./dynamic.errors";
+import {
+  announceDynamicSession,
+  doesLogoutReplaceSharedKey,
+  watchOtherTabsDynamicSessions,
+} from "./dynamicTabSync";
+import type {
+  DynamicClient,
+  DynamicWallet,
+  OTPVerification,
+  StepUpScope,
+} from "./dynamicSdk.client";
+import {
+  getSavedDynamicWalletId,
+  saveDynamicWalletId,
+} from "./dynamicWalletStorage";
+import { GoogleDriveAccessError } from "./googleDriveToken";
+import {
+  forgetGoogleSignIn,
+  getSocialRedirectUrl,
+  hasOAuthReturnParams,
+  rememberGoogleSignIn,
+} from "./dynamicSocialReturn";
+import { askToConfirmIdentity, type IdentityMethod } from "./identityCheck";
+
+export type { DynamicClient, DynamicWallet };
+
+/**
+ * How a sign-in is setting up the wallet, for the sign-in screens:
+ * - creating: the account has no wallet yet; its first one is being made
+ * - opening: the account's wallet is unlocked and is being opened. `isNew`
+ *   when it was just created by this sign-in.
+ */
+export type DynamicWalletSetup =
+  | { kind: "creating" }
+  | {
+      kind: "opening";
+      isNew: boolean;
+      address: string;
+      email: string | null;
+      lastUsedAt: Date | null;
+    };
+
+/** The selected wallet, frozen: signing checks the live wallet against it. */
+export type DynamicWalletIdentity = MavrykKeys & {
+  walletId: string;
+  /** Solana-style base58 key – internal only, never shown as an address */
+  solAddress: string;
+};
+
+// The SDK does not always report a failed start (e.g. an origin missing from
+// the allowlist): give up after this and say the service is unavailable
+const SDK_READY_TIMEOUT_MS = 12_000;
+// How long to wait for a new wallet to reach the wallet list
+const CREATED_WALLET_TIMEOUT_MS = 10_000;
+// How long to wait for a wallet the account has but the list does not show
+const LISTED_WALLET_TIMEOUT_MS = 5_000;
+// verifyOTP resolves before the signed-in user may reach the client's state:
+// wait this long for it
+const AUTHENTICATED_USER_TIMEOUT_MS = 10_000;
+// Dynamic's logout can hang; a new sign-in waits at most this
+const LOGOUT_TIMEOUT_MS = 10_000;
+const CREATE_WALLET_LOCK = "equiteez:dynamic-create-wallet";
+// Dynamic's chain id for the embedded ed25519 wallet
+const SOL_CHAIN = "SOL";
+
+// ---------------------------------------------------------------------------
+// SDK loading
+// ---------------------------------------------------------------------------
+
+let clientPromise: Promise<DynamicClient> | null = null;
+
+/**
+ * One client per page: StrictMode double effects and remounts get the same
+ * instance. A failed load can be retried.
+ */
+export function loadDynamicClient(): Promise<DynamicClient> {
+  if (typeof window === "undefined") {
+    return Promise.reject(
+      new DynamicInitError("Email wallets are only available in the browser.")
+    );
+  }
+
+  const environmentId = getDynamicEnvironmentId();
+
+  if (!environmentId) {
+    return Promise.reject(new DynamicNotConfiguredError());
+  }
+
+  clientPromise ??= import("./dynamicSdk.client")
+    .then(({ createDynamicClient }) => {
+      const client = createDynamicClient(environmentId);
+
+      syncWithOtherTabs(client);
+      return client;
+    })
+    .catch((error: unknown) => {
+      clientPromise = null;
+      throw new DynamicInitError(undefined, error);
+    });
+
+  return clientPromise;
+}
+
+/**
+ * Tells the other tabs whenever this tab's session changes (start, sign-in,
+ * sign-out), and reloads this tab unseen once another tab's change leaves it
+ * outdated (dynamicTabSync.ts).
+ */
+function syncWithOtherTabs(client: DynamicClient) {
+  const ownSessionExpiresAt = () => client.sessionExpiresAt?.getTime() ?? null;
+  const announce = () => announceDynamicSession(ownSessionExpiresAt());
+
+  client.waitForInit().then(announce, () => undefined);
+  // A sign-in or a restored session; a sign-out is onLogout's to announce,
+  // since some logouts leave the key to another tab
+  client.onUserChanged(() => {
+    if (client.user) announce();
+  });
+  client.onLogout((reason) => {
+    if (doesLogoutReplaceSharedKey(reason)) announceDynamicSession(null);
+  });
+  watchOtherTabsDynamicSessions({
+    getOwnSessionExpiresAt: ownSessionExpiresAt,
+    ready: client.waitForInit(),
+    onOutdated: () => {
+      reloadWhenHidden();
+    },
+  });
+}
+
+export async function waitForDynamicReady(
+  client: DynamicClient,
+  timeoutMs = SDK_READY_TIMEOUT_MS
+) {
+  if (client.initStatus === "failed") {
+    throw new DynamicInitError(undefined, client.initError);
+  }
+  if (client.initStatus === "finished") return;
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  try {
+    await Promise.race([
+      client.waitForInit(),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () =>
+            reject(
+              new DynamicInitError(
+                "Email wallet service did not respond. Check your connection and try again."
+              )
+            ),
+          timeoutMs
+        );
+      }),
+    ]);
+  } catch (error) {
+    if (error instanceof DynamicInitError) throw error;
+    throw new DynamicInitError(undefined, error);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Session
+// ---------------------------------------------------------------------------
+
+/**
+ * True when Dynamic has a signed-in user whose session is still valid. The
+ * SDK signs the user out when the session expires; the time is checked too,
+ * so a page that slept past it never counts as signed in.
+ */
+export function hasLiveDynamicSession(client: DynamicClient): boolean {
+  const expiresAt = client.sessionExpiresAt;
+
+  return (
+    Boolean(client.user) && !!expiresAt && expiresAt.getTime() > Date.now()
+  );
+}
+
+/** Throws DynamicSessionExpiredError unless the session is valid. */
+function assertDynamicSession(client: DynamicClient) {
+  if (!hasLiveDynamicSession(client)) throw new DynamicSessionExpiredError();
+}
+
+// ---------------------------------------------------------------------------
+// Email OTP
+// ---------------------------------------------------------------------------
+
+/**
+ * Sends a code to `email`. Signing in with a different email ends the current
+ * Dynamic session first: otherwise verifyOTP would link the new email to the
+ * signed-in user instead of switching users.
+ */
+export async function sendEmailOtp(
+  client: DynamicClient,
+  email: string
+): Promise<"sent" | "already-authenticated"> {
+  const normalizedEmail = email.trim().toLowerCase();
+  const currentEmail = client.user?.email?.toLowerCase();
+
+  if (client.user) {
+    if (hasLiveDynamicSession(client)) {
+      if (currentEmail === normalizedEmail) return "already-authenticated";
+      await client.logout();
+    } else {
+      // Expired: signed in only on paper. Its logout may fail; the new code
+      // signs in afresh either way
+      await logoutDynamic(client);
+    }
+  }
+
+  await client.sendEmailOtp(normalizedEmail);
+  return "sent";
+}
+
+export async function verifyEmailOtp(client: DynamicClient, code: string) {
+  await client.verifyEmailOtp(code.trim());
+}
+
+/**
+ * Resolves once the client knows the signed-in user. Opening the wallet
+ * before that would find no session.
+ */
+export function waitForAuthenticatedUser(
+  client: DynamicClient,
+  timeoutMs = AUTHENTICATED_USER_TIMEOUT_MS
+): Promise<void> {
+  if (client.user) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const cleanup = () => {
+      clearTimeout(timer);
+      unsubscribe();
+    };
+    const unsubscribe = client.onUserChanged(() => {
+      if (!client.user) return;
+      cleanup();
+      resolve();
+    });
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new DynamicNotAuthenticatedError());
+    }, timeoutMs);
+  });
+}
+
+export async function resendEmailOtp(client: DynamicClient) {
+  await client.resendEmailOtp();
+}
+
+/** Ends the Dynamic session. Never throws: local cleanup must always run. */
+export async function logoutDynamic(
+  client: DynamicClient,
+  timeoutMs = LOGOUT_TIMEOUT_MS
+): Promise<unknown | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  try {
+    await Promise.race([
+      client.logout(),
+      new Promise((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error("Dynamic logout timed out")),
+          timeoutMs
+        );
+      }),
+    ]);
+    return null;
+  } catch (error) {
+    return error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Google sign-in
+// ---------------------------------------------------------------------------
+
+/**
+ * Sends the browser to Google. Ends a current Dynamic session first: a
+ * signed-in user going to Google would link it to that account instead of
+ * signing in with it. The page reloads on return; finishGoogleSignIn then
+ * completes the sign-in.
+ */
+export async function startGoogleSignIn(client: DynamicClient) {
+  if (client.user) await logoutDynamic(client);
+
+  rememberGoogleSignIn();
+
+  try {
+    await client.signInWithGoogle(getSocialRedirectUrl());
+  } catch (error) {
+    forgetGoogleSignIn();
+    throw new GoogleSignInError(undefined, error);
+  }
+}
+
+/** Completes the sign-in on the page Google returned to. */
+export async function finishGoogleSignIn(client: DynamicClient) {
+  forgetGoogleSignIn();
+
+  // Back without Dynamic's parameters: the user cancelled on Google's page
+  if (!hasOAuthReturnParams()) {
+    throw new GoogleSignInError(
+      "Google sign-in was cancelled. Try again when you're ready."
+    );
+  }
+
+  let isCompleted: boolean;
+
+  try {
+    isCompleted = await client.completeGoogleRedirect(
+      new URL(window.location.href)
+    );
+  } catch (error) {
+    throw new GoogleSignInError(undefined, error);
+  }
+
+  if (!isCompleted) {
+    throw new GoogleSignInError(
+      "The link back from Google is no longer valid. Please try again."
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Wallet selection and creation
+// ---------------------------------------------------------------------------
+
+/** Dynamic's embedded SOL wallets; external wallets such as Phantom are not */
+export function getEmbeddedSolWallets(client: DynamicClient): DynamicWallet[] {
+  return client
+    .getWalletAccounts()
+    .filter(
+      (wallet) => wallet.chain === SOL_CHAIN && client.isEmbeddedWallet(wallet)
+    );
+}
+
+function getDynamicUserId(client: DynamicClient): string {
+  const userId = client.user?.id;
+
+  if (!userId) throw new DynamicNotAuthenticatedError();
+  return userId;
+}
+
+/** Resolves once an embedded SOL wallet is listed, or after the timeout. */
+function waitForEmbeddedSolWallets(
+  client: DynamicClient,
+  timeoutMs: number
+): Promise<DynamicWallet[]> {
+  const current = getEmbeddedSolWallets(client);
+
+  if (current.length > 0) return Promise.resolve(current);
+
+  return new Promise((resolve) => {
+    const finish = () => {
+      clearTimeout(timer);
+      unsubscribe();
+      resolve(getEmbeddedSolWallets(client));
+    };
+    const unsubscribe = client.onWalletAccountsChanged(() => {
+      if (getEmbeddedSolWallets(client).length > 0) finish();
+    });
+    const timer = setTimeout(finish, timeoutMs);
+  });
+}
+
+/** Picks the saved wallet, the only one, or asks the user to choose. */
+function pickDynamicWallet(
+  client: DynamicClient,
+  wallets: DynamicWallet[]
+): DynamicWallet | null {
+  const userId = getDynamicUserId(client);
+  const savedWalletId = getSavedDynamicWalletId(userId);
+  const savedWallet = savedWalletId
+    ? wallets.find((wallet) => wallet.id === savedWalletId)
+    : undefined;
+
+  if (savedWallet) return savedWallet;
+  if (wallets.length > 1) {
+    throw new MultipleDynamicWalletsError(
+      wallets.map((wallet) => ({
+        walletId: wallet.id,
+        address: deriveMavrykKeys(wallet.address).address,
+      }))
+    );
+  }
+  if (wallets.length === 0) return null;
+
+  saveDynamicWalletId(userId, wallets[0].id);
+  return wallets[0];
+}
+
+/**
+ * The embedded SOL wallet of the signed-in Dynamic user, or null when the
+ * user has none. The wallet list comes with the signed-in user, so it is
+ * complete once the SDK is ready. Never picks one of several wallets on its
+ * own.
+ */
+export async function resolveDynamicWallet(
+  client: DynamicClient
+): Promise<DynamicWallet | null> {
+  return pickDynamicWallet(client, getEmbeddedSolWallets(client));
+}
+
+/** Selects one of several wallets explicitly (after MultipleDynamicWalletsError). */
+export function selectDynamicWallet(client: DynamicClient, walletId: string) {
+  const wallet = getEmbeddedSolWallets(client).find(
+    (candidate) => candidate.id === walletId
+  );
+
+  if (!wallet) throw new DynamicWalletNotFoundError();
+  saveDynamicWalletId(getDynamicUserId(client), wallet.id);
+  return wallet;
+}
+
+/** Runs `task` under a lock shared by this app's tabs, where supported. */
+function withCrossTabLock<T>(name: string, task: () => Promise<T>) {
+  const locks =
+    typeof navigator !== "undefined"
+      ? (navigator as Navigator & { locks?: LockManager }).locks
+      : undefined;
+
+  return locks?.request ? locks.request(name, task) : task();
+}
+
+/** The account's credentials name a SOL wallet; unknown counts as no */
+function hasSolWalletOnAccount(client: DynamicClient) {
+  try {
+    return client.hasSolWalletOnAccount();
+  } catch {
+    // Project settings not loaded: the wallet list is the only answer
+    return false;
+  }
+}
+
+let ensureWalletPromise: Promise<DynamicWallet> | null = null;
+
+/**
+ * Returns the user's embedded SOL wallet, creating it when the user has none.
+ * The JavaScript SDK never creates one on its own (the dashboard's
+ * auto-create applies to Dynamic's widgets), so the app does it, right after
+ * sign-up. Single-flight within the page and locked across tabs, and the list
+ * is re-read under the lock, so a second key with another mv1 is never made.
+ * `onCreate` runs right before a wallet is created.
+ */
+export function ensureDynamicWallet(
+  client: DynamicClient,
+  onCreate?: () => void
+): Promise<DynamicWallet> {
+  ensureWalletPromise ??= withCrossTabLock(CREATE_WALLET_LOCK, async () => {
+    const existing = await resolveDynamicWallet(client);
+
+    if (existing) return existing;
+
+    // The account has a wallet the list does not show yet: wait for it.
+    // Creating one here would make a second key with another mv1.
+    if (hasSolWalletOnAccount(client)) {
+      const listed = pickDynamicWallet(
+        client,
+        await waitForEmbeddedSolWallets(client, LISTED_WALLET_TIMEOUT_MS)
+      );
+
+      if (!listed) {
+        throw new DynamicWalletNotFoundError(
+          "Your email wallet is still loading. Please try again in a moment."
+        );
+      }
+      return listed;
+    }
+
+    onCreate?.();
+    await client.createSolWallet();
+
+    // The new wallet arrives through the wallet list; trust that over the
+    // create call
+    const created = pickDynamicWallet(
+      client,
+      await waitForEmbeddedSolWallets(client, CREATED_WALLET_TIMEOUT_MS)
+    );
+
+    if (!created) throw new DynamicWalletNotFoundError();
+    return created;
+  }).finally(() => {
+    ensureWalletPromise = null;
+  });
+
+  return ensureWalletPromise;
+}
+
+/**
+ * Throws DynamicWalletLockedError when the wallet is password-protected and
+ * still locked in this browser, so the user can unlock it.
+ */
+export async function assertDynamicWalletUnlocked(
+  client: DynamicClient,
+  wallet: DynamicWallet
+) {
+  if (!(await client.isWalletLocked(wallet))) return;
+
+  throw new DynamicWalletLockedError({
+    walletId: wallet.id,
+    address: deriveMavrykKeys(wallet.address).address,
+    lastUsedAt: wallet.lastSelectedAt,
+    email: client.user?.email ?? null,
+  });
+}
+
+/**
+ * Dynamic's answer for a password that does not decrypt the key share. The
+ * decryption runs in Dynamic's frame and the SDK has no error class for it,
+ * so only messages that clearly name a wrong password or a failed decryption
+ * count; anything else ("Invalid session", "Invalid access token") is passed
+ * on as is.
+ */
+const WRONG_PASSWORD_PATTERN =
+  /\b(?:wrong|incorrect|invalid|bad)\s+(?:password|passphrase|passcode)\b|\b(?:password|passphrase|passcode)\s+(?:is\s+)?(?:wrong|incorrect|invalid)\b|\b(?:failed to|unable to|could not|cannot) decrypt\b|\bdecryption failed\b|\bbad decrypt\b/i;
+
+const isWrongPasswordError = (error: unknown) =>
+  error instanceof Error && WRONG_PASSWORD_PATTERN.test(error.message);
+
+/** Unlocks the password-protected wallet `walletId` in this browser. */
+export async function unlockDynamicWallet(
+  client: DynamicClient,
+  walletId: string,
+  password: string
+) {
+  assertDynamicSession(client);
+
+  const wallet = getEmbeddedSolWallets(client).find(
+    (candidate) => candidate.id === walletId
+  );
+
+  if (!wallet) throw new DynamicWalletNotFoundError();
+
+  try {
+    await client.unlockWallet(wallet, password);
+  } catch (error) {
+    if (isWrongPasswordError(error)) throw new DynamicWrongPasswordError(error);
+    throw error;
+  }
+}
+
+/** The connected wallet, for the password calls (any embedded one works) */
+function getConnectedWallet(client: DynamicClient, walletId: string) {
+  assertDynamicSession(client);
+
+  const wallet = getEmbeddedSolWallets(client).find(
+    (candidate) => candidate.id === walletId
+  );
+
+  if (!wallet) throw new DynamicWalletNotFoundError();
+  return wallet;
+}
+
+export async function hasDynamicWalletPassword(client: DynamicClient) {
+  assertDynamicSession(client);
+  return client.hasWalletPassword();
+}
+
+/** Dynamic's answer when a password exists: "use updatePassword" */
+const isPasswordAlreadySetError = (error: unknown) =>
+  error instanceof Error &&
+  /already password-encrypted|already has a password|updatePassword/i.test(
+    error.message
+  );
+
+/**
+ * Protects the user's wallets with `password`. Dynamic never sees it and
+ * cannot reset it; the wallet then comes locked on a new device or session.
+ */
+export async function setDynamicWalletPassword(
+  client: DynamicClient,
+  walletId: string,
+  password: string
+) {
+  try {
+    await client.setWalletPassword(
+      getConnectedWallet(client, walletId),
+      password
+    );
+  } catch (error) {
+    if (isPasswordAlreadySetError(error)) {
+      throw new DynamicPasswordAlreadySetError(error);
+    }
+    throw error;
+  }
+}
+
+export async function changeDynamicWalletPassword(
+  client: DynamicClient,
+  walletId: string,
+  currentPassword: string,
+  newPassword: string
+) {
+  try {
+    await client.changeWalletPassword(
+      getConnectedWallet(client, walletId),
+      currentPassword,
+      newPassword
+    );
+  } catch (error) {
+    if (isWrongPasswordError(error)) throw new DynamicWrongPasswordError(error);
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Second factor at sign-in
+// ---------------------------------------------------------------------------
+
+/**
+ * The user's second factors. When Dynamic's list is unreadable or names
+ * neither (e.g. only recovery codes are left), the code field is offered:
+ * it takes the app's code and, one click away, a recovery code, so the
+ * sign-in always has a way forward.
+ */
+async function getSecondFactorMethods(client: DynamicClient) {
+  const codeOnly = { hasAuthenticator: true, hasPasskey: false };
+
+  try {
+    const methods = await client.getSecondFactorMethods();
+
+    return methods.hasAuthenticator || methods.hasPasskey ? methods : codeOnly;
+  } catch {
+    return codeOnly;
+  }
+}
+
+/**
+ * Throws DynamicSecondFactorRequiredError while the sign-in still owes
+ * Dynamic a second factor (the user has an authenticator app or a passkey).
+ */
+export async function assertDynamicSecondFactorPassed(client: DynamicClient) {
+  if (!client.needsSecondFactor()) return;
+
+  throw new DynamicSecondFactorRequiredError(
+    await getSecondFactorMethods(client)
+  );
+}
+
+export type SecondFactor =
+  | { kind: "authenticator"; code: string }
+  | { kind: "recovery-code"; code: string }
+  | { kind: "passkey" };
+
+/** Completes the sign-in with the second factor. */
+export async function passDynamicSecondFactor(
+  client: DynamicClient,
+  factor: SecondFactor
+) {
+  try {
+    if (factor.kind === "passkey") {
+      await client.passSecondFactorWithPasskey();
+    } else if (factor.kind === "authenticator") {
+      await client.passSecondFactorWithCode(factor.code.trim());
+    } else {
+      await client.passSecondFactorWithRecoveryCode(factor.code.trim());
+    }
+  } catch (error) {
+    if (factor.kind !== "passkey" && client.isInvalidCodeError(error)) {
+      throw new DynamicWrongCodeError(error);
+    }
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Authenticator app
+// ---------------------------------------------------------------------------
+
+export type DynamicAuthenticator = { id: string; addedAt: Date | null };
+
+/** The user's turned-on authenticator app, or null */
+export async function getDynamicAuthenticator(
+  client: DynamicClient
+): Promise<DynamicAuthenticator | null> {
+  assertDynamicSession(client);
+
+  const device = (await client.getAuthenticators()).find(
+    (candidate) => candidate.verified === true
+  );
+
+  if (!device?.id) return null;
+
+  const addedAt = device.verifiedAt ?? device.createdAt ?? null;
+
+  return { id: device.id, addedAt: addedAt ? new Date(addedAt) : null };
+}
+
+export type AuthenticatorSetup = {
+  deviceId: string;
+  /** otpauth:// URI for the QR code */
+  uri: string;
+  /** The key to type in when the QR code can't be scanned */
+  secret: string;
+};
+
+/** After "Confirm it's you", starts adding an authenticator app. */
+export async function startDynamicAuthenticatorSetup(
+  client: DynamicClient
+): Promise<AuthenticatorSetup> {
+  await verifyDynamicIdentity(client, "credential:link");
+
+  const { id, uri, secret } = await client.registerAuthenticator();
+
+  return { deviceId: id, uri, secret };
+}
+
+/** Turns the new authenticator on with its first code. */
+export async function verifyDynamicAuthenticatorSetup(
+  client: DynamicClient,
+  deviceId: string,
+  code: string
+) {
+  try {
+    await client.verifyAuthenticator(deviceId, code.trim());
+  } catch (error) {
+    if (client.isInvalidCodeError(error)) {
+      throw new DynamicWrongCodeError(error);
+    }
+    throw error;
+  }
+}
+
+/**
+ * The recovery codes to save after turning the authenticator on. Rejects on
+ * failure: losing them silently could lock the user out later.
+ */
+export async function getDynamicRecoveryCodes(client: DynamicClient) {
+  assertDynamicSession(client);
+  return client.getRecoveryCodes();
+}
+
+export async function acknowledgeDynamicRecoveryCodes(client: DynamicClient) {
+  await client.acknowledgeRecoveryCodes();
+}
+
+/** Removes the authenticator; a current code from it is the check. */
+export async function removeDynamicAuthenticator(
+  client: DynamicClient,
+  deviceId: string,
+  code: string
+) {
+  assertDynamicSession(client);
+
+  try {
+    await client.removeAuthenticator(deviceId, code.trim());
+  } catch (error) {
+    if (client.isInvalidCodeError(error))
+      throw new DynamicWrongCodeError(error);
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Google Drive backup
+// ---------------------------------------------------------------------------
+
+/**
+ * True when the wallet has a key share backed up to Google Drive. The JS SDK
+ * has no call for this: the wallet's credential lists its key shares and
+ * where each is backed up.
+ */
+export function isDynamicWalletBackedUp(
+  client: DynamicClient,
+  walletId: string
+) {
+  const wallet = getEmbeddedSolWallets(client).find(
+    (candidate) => candidate.id === walletId
+  );
+  const credential = client.user?.verifiedCredentials?.find(
+    (candidate) => candidate.id === wallet?.verifiedCredentialId
+  );
+
+  return Boolean(
+    credential?.walletProperties?.keyShares?.some(
+      (keyShare) => keyShare.backupLocation === "googleDrive"
+    )
+  );
+}
+
+/**
+ * Where the Drive access comes from: "stored" when the user's Google sign-in
+ * already granted Drive access, so Dynamic uses its own token; otherwise
+ * "popup", Google's consent popup (googleDriveToken.ts). A backup reshares
+ * the wallet, so this is checked before starting one.
+ */
+export async function getGoogleDriveAccessSource(
+  client: DynamicClient
+): Promise<"stored" | "popup"> {
+  assertDynamicSession(client);
+
+  if (!client.hasGoogleAccount()) return "popup";
+
+  try {
+    return (await client.isGoogleDriveReady()) ? "stored" : "popup";
+  } catch {
+    // Unknown: asking Google is the safe way
+    return "popup";
+  }
+}
+
+/**
+ * Backs the wallet's key share up to Google Drive, then re-reads the user so
+ * the backup shows. `password` is needed when the wallet has one.
+ */
+export async function backupDynamicWallet(
+  client: DynamicClient,
+  walletId: string,
+  options: { googleDriveAccessToken?: string; password?: string }
+) {
+  const wallet = getConnectedWallet(client, walletId);
+
+  try {
+    await client.backupToGoogleDrive(wallet, options);
+  } catch (error) {
+    if (client.isGoogleDriveAccessError(error)) {
+      throw new GoogleDriveAccessError(
+        "Google didn't give access to your Drive. Tick both Google Drive boxes, then try again."
+      );
+    }
+    if (options.password && isWrongPasswordError(error)) {
+      throw new DynamicWrongPasswordError(error);
+    }
+    throw error;
+  }
+
+  try {
+    await client.refreshUser();
+  } catch {
+    // The backup is done; the status catches up on the next sign-in
+  }
+}
+
+export function toDynamicWalletIdentity(
+  wallet: DynamicWallet
+): DynamicWalletIdentity {
+  return {
+    walletId: wallet.id,
+    solAddress: wallet.address,
+    ...deriveMavrykKeys(wallet.address),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Signing
+// ---------------------------------------------------------------------------
+
+type SignDigestParams = {
+  client: DynamicClient;
+  identity: DynamicWalletIdentity;
+  digest: Uint8Array;
+  /** True once the app moved on (sign-out, account switch) */
+  isStale?: () => boolean;
+};
+
+/** The raw 64-byte signature from Dynamic's base58 (or hex) answer */
+function decodeDynamicSignature(signature: string): Uint8Array {
+  const hex = signature.startsWith("0x") ? signature.slice(2) : signature;
+
+  if (new RegExp(`^[0-9a-fA-F]{${ED25519_SIGNATURE_LENGTH * 2}}$`).test(hex)) {
+    return decodeHex(hex, "Signature");
+  }
+
+  return base58SignatureToSig64(signature);
+}
+
+/**
+ * Signs a 32-byte digest with the selected wallet and returns the raw
+ * 64-byte ed25519 signature, verified locally against the digest and the
+ * wallet's key. Callers build the digest (packed payload or 03 || operation);
+ * this never hashes again.
+ */
+export async function signDigest32({
+  client,
+  identity,
+  digest,
+  isStale,
+}: SignDigestParams): Promise<Uint8Array> {
+  if (digest.length !== DIGEST_LENGTH) {
+    throw new InvalidKeyMaterialError(
+      `Digest must be ${DIGEST_LENGTH} bytes, got ${digest.length}`
+    );
+  }
+
+  const getSelectedWallet = () => {
+    const wallet = client
+      .getWalletAccounts()
+      .find((candidate) => candidate.id === identity.walletId);
+
+    if (!wallet || wallet.address !== identity.solAddress || isStale?.()) {
+      throw new DynamicIdentityChangedError();
+    }
+
+    return wallet;
+  };
+
+  const signature = await client.signMessage(
+    getSelectedWallet(),
+    bytesToHex(digest)
+  );
+
+  getSelectedWallet();
+
+  const sig64 = decodeDynamicSignature(signature);
+
+  if (!verifyDigestSignature(sig64, digest, identity.pk32)) {
+    throw new LocalSignatureVerificationError();
+  }
+
+  return sig64;
+}
+
+// ---------------------------------------------------------------------------
+// Identity check (step-up)
+// ---------------------------------------------------------------------------
+
+/** HTTP status of a Dynamic API error, or null for any other failure */
+const getApiErrorStatus = (error: unknown): number | null => {
+  if (!(error instanceof Error) || error.name !== "APIError") return null;
+
+  const { status } = error as Error & { status?: unknown };
+
+  return typeof status === "number" ? status : null;
+};
+
+/**
+ * Checks a "Confirm it's you" code and names why it failed: a wrong or used
+ * code (Dynamic answers 4xx about the code), an expired session (401), or
+ * anything else as is, e.g. no connection.
+ */
+async function checkStepUpCode(
+  client: DynamicClient,
+  verify: () => Promise<void>
+) {
+  try {
+    await verify();
+  } catch (error) {
+    const status = getApiErrorStatus(error);
+
+    if (status === 401) throw new DynamicSessionExpiredError();
+    if (
+      client.isInvalidCodeError(error) ||
+      (status !== null && status >= 400 && status < 500 && status !== 429)
+    ) {
+      throw new DynamicWrongCodeError(error);
+    }
+    throw error;
+  }
+}
+
+/** The ways the dialog can offer for the credentials Dynamic accepts */
+function toIdentityMethods(
+  client: DynamicClient,
+  check: Awaited<ReturnType<DynamicClient["checkStepUp"]>>,
+  scope: StepUpScope
+): IdentityMethod[] {
+  const credentialsById = new Map(
+    (client.user?.verifiedCredentials ?? []).map((credential) => [
+      credential.id,
+      credential,
+    ])
+  );
+  // Dynamic's recommendation first: the second factor, or the sign-in email
+  const credentials = [...check.credentials].sort(
+    (a, b) =>
+      Number(b.id === check.defaultCredentialId) -
+      Number(a.id === check.defaultCredentialId)
+  );
+  const methods: IdentityMethod[] = [];
+
+  for (const credential of credentials) {
+    switch (`${credential.format}`) {
+      case "passkey":
+        if (methods.some((method) => method.kind === "passkey")) break;
+        methods.push({
+          kind: "passkey",
+          id: "passkey",
+          label: "Use a passkey",
+          run: () => client.confirmWithPasskey(scope),
+        });
+        break;
+
+      case "totp":
+        methods.push({
+          kind: "code",
+          id: `totp:${credential.id}`,
+          label: "Use my authenticator app",
+          sentTo: null,
+          verify: (code) =>
+            checkStepUpCode(client, () =>
+              client.confirmWithAuthenticator(credential.id, code.trim(), scope)
+            ),
+        });
+        break;
+
+      case "email": {
+        const email =
+          credentialsById.get(credential.id)?.email ?? client.user?.email;
+
+        if (!email) break;
+
+        let sent: OTPVerification | null = null;
+
+        methods.push({
+          kind: "code",
+          id: `email:${email}`,
+          label: "Email me a code",
+          sentTo: null,
+          send: async () => {
+            sent = await client.sendStepUpEmailCode(email, scope);
+            return email;
+          },
+          verify: async (code) => {
+            if (!sent) throw new Error("Ask for a code first.");
+
+            const otp = sent;
+
+            await checkStepUpCode(client, () =>
+              client.verifyStepUpEmailCode(otp, code.trim(), scope)
+            );
+          },
+        });
+        break;
+      }
+
+      default:
+        // Social accounts, SMS and external wallets are not offered yet
+        break;
+    }
+  }
+
+  return methods;
+}
+
+/**
+ * Makes sure the user has freshly proven who they are for `scope`. Does
+ * nothing when Dynamic doesn't require it (a recent check is still valid);
+ * otherwise opens "Confirm it's you" with the ways Dynamic accepts. Rejects
+ * with IdentityCheckCancelledError when the user closes it.
+ */
+export async function verifyDynamicIdentity(
+  client: DynamicClient,
+  scope: StepUpScope
+) {
+  assertDynamicSession(client);
+
+  const check = await client.checkStepUp(scope);
+
+  if (!check.isRequired) return;
+
+  const methods = toIdentityMethods(client, check, scope);
+  const first = methods[0];
+
+  if (!first) throw new IdentityCheckUnavailableError();
+  // A code by email as the first choice: send it before asking
+  if (first.kind === "code" && first.send) first.sentTo = await first.send();
+
+  await askToConfirmIdentity(methods);
+}
+
+/**
+ * Shows the private key of `walletId` in an isolated frame Dynamic injects
+ * into `displayContainer`, after "Confirm it's you". The key never reaches
+ * the app. Dynamic shows it in Solana format (64-byte base58).
+ */
+export async function revealDynamicPrivateKey(
+  client: DynamicClient,
+  walletId: string,
+  displayContainer: HTMLElement,
+  /** The wallet password, when the wallet has one */
+  password?: string
+): Promise<void> {
+  assertDynamicSession(client);
+
+  const wallet = getEmbeddedSolWallets(client).find(
+    (candidate) => candidate.id === walletId
+  );
+
+  if (!wallet) throw new DynamicWalletNotFoundError();
+
+  await verifyDynamicIdentity(client, "wallet:export");
+
+  try {
+    await client.exportPrivateKey(wallet, displayContainer, password);
+  } catch (error) {
+    if (password && isWrongPasswordError(error)) {
+      throw new DynamicWrongPasswordError(error);
+    }
+    throw error;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Passkeys
+// ---------------------------------------------------------------------------
+
+/** A passkey on the user's Dynamic account, as the Wallet page lists it. */
+export type DynamicPasskey = {
+  id: string;
+  /** The user's alias, else the passkey manager (e.g. "iCloud Keychain") */
+  name: string | null;
+  createdAt: Date;
+};
+
+export async function getDynamicPasskeys(
+  client: DynamicClient
+): Promise<DynamicPasskey[]> {
+  assertDynamicSession(client);
+
+  const passkeys = await client.getPasskeys();
+
+  return passkeys.map((passkey) => ({
+    id: passkey.id,
+    name: passkey.alias || passkey.storage?.name || null,
+    createdAt: new Date(passkey.createdAt),
+  }));
+}
+
+/**
+ * After "Confirm it's you", runs the browser's passkey prompt (Touch ID,
+ * Face ID…) and registers the passkey.
+ */
+export async function addDynamicPasskey(client: DynamicClient) {
+  await verifyDynamicIdentity(client, "credential:link");
+  await client.registerPasskey();
+}
+
+export async function removeDynamicPasskey(
+  client: DynamicClient,
+  passkeyId: string
+) {
+  await verifyDynamicIdentity(client, "credential:unlink");
+  await client.deletePasskey(passkeyId);
+}

@@ -9,6 +9,7 @@ import {
   userTzktWSAccountSchema,
 } from "./helpers/user.schemes";
 import BigNumber from "bignumber.js";
+import type { DisconnectOptions } from "~/providers/WalletProvider/wallet.types";
 
 // User tokens types
 export type UserTzktTokensBalancesType = z.infer<
@@ -29,8 +30,13 @@ export type UserContext = UserContextStateType & {
 
   // actions
   connect: () => void;
+  /**
+   * Connect with the given step (e.g. email code check), then sign in. A step
+   * resolving to false did not connect, and no sign-in follows.
+   */
+  connectWithWallet: (connectWallet: () => Promise<unknown>) => Promise<void>;
   refetchUserAccountStatus: () => Promise<void>;
-  signOut: () => void;
+  signOut: (options?: DisconnectOptions) => Promise<void>;
   changeUser: () => void;
 };
 

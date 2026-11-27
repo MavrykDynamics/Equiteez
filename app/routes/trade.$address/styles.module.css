@@ -57,9 +57,6 @@
   padding-top: var(--r-space-10);
 }
 
-.viewOnlyNotice {
-  display: none;
-}
 .notFoundWrapper {
   display: flex;
   align-items: center;
@@ -145,14 +142,9 @@
 }
 
 @media (--media-tablet) {
+  /* Room between the header and the asset row */
   .contentBlock {
-    padding-top: 0;
-  }
-
-  .viewOnlyNotice {
-    display: block;
-    padding: var(--r-space-4) 0;
-    text-align: center;
+    padding-top: var(--r-space-4);
   }
 
   .primary.contentBlock {
@@ -171,10 +163,8 @@
     order: 2;
   }
 
-  .primary .buySellContainer {
-    display: none;
-  }
-
+  /* Secondary market: only the copy in the chart slider (.buySellSlide) is
+     shown; the primary sale card stays in place (display: flex above) */
   .buySellContainer {
     display: none;
   }
@@ -251,9 +241,6 @@
 
   .chartSlider {
     --slider-gutter: var(--r-space-4);
-  }
-  .viewOnlyNotice {
-    padding: var(--r-space-3) 0;
   }
   .primaryGallery > section:last-child {
     margin-bottom: var(--r-space-5);

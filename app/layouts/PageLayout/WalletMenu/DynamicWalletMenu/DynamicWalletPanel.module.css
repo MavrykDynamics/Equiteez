@@ -1,0 +1,507 @@
+@import "../../../../styles/breakpoints.css";
+
+/* Figma "Wallet" (8134:575): 384px wide, 16px padding and 12px between
+   blocks. 595px tall at least; 769px at most (8136:684), and never past
+   the viewport. Past that only the asset list scrolls. */
+
+.panel {
+  position: absolute;
+  top: calc(100% + var(--r-space-2));
+  right: 0;
+  z-index: 50;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 384px;
+  min-height: min(595px, calc(100vh - 88px));
+  max-height: min(769px, calc(100vh - 88px));
+  padding: var(--r-space-4);
+  overflow-y: auto;
+  color: var(--r-color-neutral-black);
+  background: var(--r-color-neutral-white);
+  border: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+  border-radius: var(--r-radius-md);
+  box-shadow: 0 7px 25.781px rgba(0, 0, 0, 0.08);
+}
+
+/* Home's title · close row: phones only, the dropdown closes on outside
+   clicks elsewhere */
+.viewHeader.homeHeader {
+  display: none;
+}
+
+/* Phones: the panel takes the whole screen, above the bottom navigation */
+@media (--media-phone-max) {
+  .panel {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+    max-height: none;
+    overscroll-behavior: contain;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .viewHeader.homeHeader {
+    display: flex;
+  }
+}
+
+.view {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  gap: var(--r-space-3);
+}
+
+/* Home: fills the panel; the asset list takes the room left and scrolls,
+   the card, actions and footer stay put */
+.homeView {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Asset sheet (8136:841): 16px between blocks, actions at the bottom */
+.sheet {
+  gap: var(--r-space-4);
+}
+
+.sheet .viewHeader {
+  margin-bottom: 0;
+}
+
+.iconButton {
+  display: inline-grid;
+  flex-shrink: 0;
+  padding: 0;
+  place-items: center;
+  color: var(--r-color-neutral-black);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-radius-xs);
+  cursor: pointer;
+}
+
+.iconButton:focus-visible,
+.assetRow:focus-visible,
+.footerLink:focus-visible,
+.addressCopy:focus-visible,
+.addressLink:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.mutedIcon {
+  color: var(--r-color-neutral-600);
+}
+
+/* Back · title · close (home, phones) or back · title · empty slot */
+.viewHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--r-space-1);
+}
+
+.headerSlot {
+  flex-shrink: 0;
+  width: var(--r-size-icon-medium);
+}
+
+.viewHeader .phoneClose {
+  display: none;
+}
+
+/* Phones: the full-screen panel needs its close on every view */
+@media (--media-phone-max) {
+  .viewHeader .phoneClose {
+    display: inline-grid;
+  }
+
+  .headerSlot {
+    display: none;
+  }
+}
+
+/* Home: portfolio card */
+.portfolioCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-3);
+  padding: var(--r-space-4);
+  background: var(--r-color-neutral-50);
+  border-radius: var(--r-radius-12);
+}
+
+.portfolioLabelRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--r-space-2);
+}
+
+.portfolioValueRow {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-2);
+  min-height: 44px;
+}
+
+.portfolioValue {
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-heading-h4);
+  font-weight: 500;
+  line-height: 44px;
+  letter-spacing: 0.32px;
+}
+
+.portfolioValueSkeleton {
+  width: 160px;
+  height: 36px;
+}
+
+.addressRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-2);
+  padding-top: var(--r-space-3);
+  border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.fullAddress {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Address · copy · Nexus: the TX HASH hover of the transaction history. The
+   negative margins keep the hover padding from moving anything. */
+/* Figma: the address on the left, copy · link at the right edge */
+.address {
+  display: inline-flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: var(--r-space-2);
+}
+
+.addressCopy,
+.addressLink {
+  display: inline-flex;
+  align-items: center;
+  color: var(--r-color-neutral-black);
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color var(--r-transition-duration-fast) ease;
+}
+
+.addressCopy {
+  flex: 1 1 auto;
+  justify-content: space-between;
+  min-width: 0;
+  gap: var(--r-space-4);
+  margin: -2px -2px -2px -4px;
+  padding: 2px 2px 2px 4px;
+  font: inherit;
+  text-align: left;
+}
+
+.addressLink {
+  flex-shrink: 0;
+  margin: -2px;
+  padding: 2px;
+}
+
+.addressCopy:hover,
+.addressLink:hover {
+  background: var(--r-color-neutral-100);
+}
+
+.addressCopy svg {
+  flex-shrink: 0;
+}
+
+/* Deposit · Withdraw, Receive · Send */
+.actions,
+.sheetActions {
+  display: flex;
+  gap: var(--r-space-2);
+}
+
+.actionButton {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Figma "wallet/panel actions": 16px before the icon, 24px after the label
+   (RButton medium with an icon pads 20px); repeated to outrank its
+   two-class rule whatever the stylesheet order */
+.actionButton.actionButton.actionButton {
+  padding-left: var(--r-space-4);
+}
+
+/* Home: assets */
+.assets {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.assetScroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  /* Vertical only: Money's amounts reach 1px past the right edge (-mr-px),
+     which would add a horizontal scrollbar */
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* The asset list and the panel still scroll, without a scrollbar over the
+   amounts (Figma shows none) */
+.panel,
+.assetScroll {
+  scrollbar-width: none;
+}
+
+.panel::-webkit-scrollbar,
+.assetScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.assetsHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: var(--r-space-1);
+}
+
+/* Figma: "Assets", then the info icon 4px on, sitting 3px above the
+   text's bottom */
+.assetsTitle {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--r-space-1);
+}
+
+.assetsHint {
+  display: flex;
+  margin-bottom: 3px;
+  padding: 0;
+  color: var(--r-color-neutral-700);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-radius-xs);
+}
+
+.assetsHint:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
+.assetList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.assetList li:not(:last-child) .assetRow {
+  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.assetRow {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: var(--r-space-3);
+  padding: var(--r-space-2) 0;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.assetRow:hover .assetTitle > :first-child {
+  text-decoration: underline;
+}
+
+.assetIcon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.assetRowSkeleton {
+  flex: 1;
+  height: 39px;
+}
+
+.assetMain {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.assetTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-2);
+}
+
+.assetAmounts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.badge {
+  padding: 2px var(--r-space-2);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-xs);
+  line-height: 15px;
+  white-space: nowrap;
+  border-radius: var(--r-radius-pill);
+}
+
+.badge[data-kind="eqtz"] {
+  color: var(--r-color-accent-green-700);
+  background: rgba(164, 192, 186, 0.25);
+}
+
+.badge[data-kind="stablecoin"] {
+  color: var(--r-color-blue-700);
+  background: rgba(137, 180, 250, 0.25);
+}
+
+.empty {
+  padding: var(--r-space-4) 0;
+}
+
+/* Home: footer */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--r-space-3);
+  border-top: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.footerLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  color: var(--r-color-neutral-black);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  font-weight: 500;
+  line-height: 18px;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-radius-xs);
+  cursor: pointer;
+}
+
+/* Asset sheet */
+.assetHero {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-3);
+}
+
+.assetHeroIcon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.balance {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--r-space-4);
+  border-bottom: var(--r-border-width-sm) solid var(--r-color-neutral-100);
+}
+
+.balanceValue {
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-heading-h4);
+  font-weight: 500;
+  line-height: 44px;
+  letter-spacing: 0.32px;
+}
+
+.infoMessage {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--r-space-2);
+  padding: var(--r-space-3);
+  background: var(--r-color-neutral-50);
+  border-radius: var(--r-radius-12);
+}
+
+.infoMessage > svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-2);
+  margin: 0;
+}
+
+.detail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--r-space-3);
+}
+
+.detail dd {
+  margin: 0;
+  text-align: right;
+}
+
+.detailValue {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--r-space-1);
+}
+
+.sheetActions {
+  margin-top: auto;
+}
+
+/* Withdraw: the description centred, like Deposit's */
+.withdrawDescription {
+  text-align: center;
+}
+
+/* Deposit: the modal's address field at its own S-M (14px); a long
+   address breaks onto a second line rather than overflow the panel */
+.depositBody button {
+  max-width: 100%;
+}
+
+.depositBody button > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

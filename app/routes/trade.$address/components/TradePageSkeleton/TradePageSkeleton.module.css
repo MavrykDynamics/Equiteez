@@ -210,10 +210,10 @@
     height: 24px;
   }
 
-  /* Swipeable slider: the buy/sell card shows first, sized to the 491px
+  /* Swipeable slider: the buy/sell card shows first, sized to the 506px
      chart card behind it */
   .chart {
-    height: 491px;
+    height: 506px;
   }
 
   .stats {

@@ -34,7 +34,7 @@ export function RHeader() {
   const hasUnreadNotifications = unreadNotificationsCount > 0;
 
   // Skeleton only while the stored session first restores (on the server too,
-  // so the "Connect Wallet" button never flashes). Later refetches of the user
+  // so the "Sign In" button never flashes). Later refetches of the user
   // data keep the loaded widget instead of dropping back to the skeleton.
   const isSessionRestoring =
     isAuthLoading || isUserLoading || (isAuthenticated && !userAddress);

@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from "react";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 import clsx from "clsx";
 
 import { RText } from "~/lib/atoms/RTypography/RText";
@@ -10,6 +10,7 @@ export type RTabProps = Omit<
   "children" | "onClick" | "onSelect" | "role"
 > & {
   count?: number;
+  icon?: ReactNode;
   id: string;
   isSelected?: boolean;
   label: string;
@@ -21,6 +22,7 @@ export function RTab({
   className,
   count,
   disabled = false,
+  icon,
   id,
   isSelected = false,
   label,
@@ -71,6 +73,7 @@ export function RTab({
           </RText>
         </span>
       ) : null}
+      {icon ? <span className={styles.icon}>{icon}</span> : null}
     </button>
   );
 }

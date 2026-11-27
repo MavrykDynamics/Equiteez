@@ -42,6 +42,7 @@ export function OpenOrdersTableRow({ order }: OpenOrdersTableRowProps) {
     actionLabel,
     handleClosePopup,
     handleOpenPopup,
+    unavailableReason,
     handleOrderAction,
     isPopupOpen,
     popupDescription,
@@ -109,14 +110,16 @@ export function OpenOrdersTableRow({ order }: OpenOrdersTableRowProps) {
         <div className={`${styles.cell} ${styles.actionCell}`} role="cell">
           <RTooltip
             content={
-              actionIcon === "refund"
+              unavailableReason ??
+              (actionIcon === "refund"
                 ? "Claim remaining escrow"
-                : "Cancel Order. A cancellation fee will apply"
+                : "Cancel Order. A cancellation fee will apply")
             }
           >
             <button
               aria-label={actionLabel}
               className={styles.actionIcon}
+              disabled={Boolean(unavailableReason)}
               onClick={handleOpenPopup}
               type="button"
             >

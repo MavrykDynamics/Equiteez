@@ -1,0 +1,27 @@
+/* 24px slot; the mask and artwork sit where Figma places them */
+.icon {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+  width: var(--r-size-icon-medium);
+  height: var(--r-size-icon-medium);
+  overflow: hidden;
+}
+
+.clip {
+  position: absolute;
+  inset: 11.37% 11.94% 11.14% 11.93%;
+  mask-repeat: no-repeat;
+  mask-position: 0.134px 0.079px;
+  mask-size: 18.002px 18.386px;
+}
+
+.artwork {
+  position: absolute;
+  top: -0.22%;
+  left: -0.23%;
+  display: block;
+  width: 100.46%;
+  max-width: none;
+  height: 100.44%;
+}

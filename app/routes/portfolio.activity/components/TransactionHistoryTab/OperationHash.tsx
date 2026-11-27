@@ -1,17 +1,27 @@
 import { useMemo, type MouseEvent } from "react";
 import clsx from "clsx";
 
-import { RIcon } from "~/lib/atoms/RIcon";
+import { RIcon, type RIconSize } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { NEXUS_LINK } from "~/consts";
+import useCopyToClipboard from "~/lib/ui/useCopyToClipboard";
 import useTippy from "~/lib/ui/useTippy";
 
 import styles from "./OperationHash.module.css";
 
 type OperationHashProps = {
   className?: string;
+  /** The copy tooltip: "Copy address" when the hash is an address */
+  copyLabel?: string;
+  /**
+   * "medium" draws Figma's 12px copy glyph (Wallet → Signing key, the wallet
+   * panel's asset sheet) in the same 16px slot, so the row keeps its size
+   */
+  copyIconSize?: RIconSize;
   display?: "full" | "short";
   operationHash: string;
+  /** False for values Nexus has no page for, such as a public key */
+  withNexusLink?: boolean;
 };
 
 function getShortHash(hash: string) {
@@ -32,21 +42,26 @@ function getNexusEntityPath(operationHash: string) {
 
 export function OperationHash({
   className,
+  copyLabel = "Copy hash",
+  copyIconSize = "small",
   display = "short",
   operationHash,
+  withNexusLink = true,
 }: OperationHashProps) {
   const nexusEntityPath = getNexusEntityPath(operationHash);
+  // "Copied!" for 2 seconds after a copy, then the label again
+  const { copied, setCopied } = useCopyToClipboard();
   const copyTooltipRef = useTippy<HTMLDivElement>(
     useMemo(
       () => ({
         animation: "shift-away-subtle",
-        content: "Copy hash",
+        content: copied ? "Copied!" : copyLabel,
         hideOnClick: false,
         placement: "top" as const,
         theme: "operation-hash",
         trigger: "mouseenter focus",
       }),
-      []
+      [copied, copyLabel]
     )
   );
   const nexusTooltipRef = useTippy<HTMLAnchorElement>(
@@ -63,8 +78,19 @@ export function OperationHash({
     )
   );
 
-  const handleCopy = () => {
-    void navigator.clipboard?.writeText(operationHash);
+  const handleCopy = async () => {
+    if (!navigator.clipboard) {
+      console.error("OperationHash: the clipboard is not available");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(operationHash);
+      setCopied(true);
+    } catch (error) {
+      // Leave the label as it is: nothing was copied
+      console.error("OperationHash: copy failed", error);
+    }
   };
 
   const handleActionClick = (event: MouseEvent<HTMLElement>) => {
@@ -78,28 +104,38 @@ export function OperationHash({
         ref={copyTooltipRef}
         onClick={(event) => {
           handleActionClick(event);
-          handleCopy();
+          void handleCopy();
         }}
       >
         <RText className={styles.hashText} size="body-sm">
           {display === "short" ? getShortHash(operationHash) : operationHash}
         </RText>
         <span className={styles.action}>
-          <RIcon name="copy" size="small" />
+          {/* "medium": Figma's 12px copy glyph (copy-16) in the same slot */}
+          <RIcon
+            name={copyIconSize === "medium" ? "copy-16" : "copy"}
+            size="small"
+          />
         </span>
       </div>
 
-      <a
-        aria-label="View transaction in Nexus"
-        className={styles.actionLink}
-        href={`${NEXUS_LINK}/explorer/${nexusEntityPath}/${operationHash}`}
-        onClick={handleActionClick}
-        ref={nexusTooltipRef}
-        rel="noreferrer"
-        target="_blank"
-      >
-        <RIcon name="arrow-long-up-right" size="small" />
-      </a>
+      {withNexusLink && (
+        <a
+          aria-label={
+            nexusEntityPath === "operation"
+              ? "View transaction in Nexus"
+              : "View in Nexus"
+          }
+          className={styles.actionLink}
+          href={`${NEXUS_LINK}/explorer/${nexusEntityPath}/${operationHash}`}
+          onClick={handleActionClick}
+          ref={nexusTooltipRef}
+          rel="noreferrer"
+          target="_blank"
+        >
+          <RIcon name="arrow-long-up-right" size="small" />
+        </a>
+      )}
     </span>
   );
 }

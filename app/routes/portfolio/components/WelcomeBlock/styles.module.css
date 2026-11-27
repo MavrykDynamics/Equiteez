@@ -11,6 +11,12 @@
   width: 100%;
 }
 
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--r-space-3);
+}
+
 .actions {
   display: flex;
   gap: var(--r-space-3);

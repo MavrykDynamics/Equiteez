@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import type { ReactNode } from "react";
 
 import { RTab } from "~/lib/atoms/RTab";
 
@@ -6,6 +7,8 @@ import styles from "./RTabSwitcher.module.css";
 
 export type RTabSwitcherItem = {
   count?: number;
+  /** Shown after the label, e.g. a status mark */
+  icon?: ReactNode;
   id: string;
   label: string;
   type?: "notification";
@@ -35,6 +38,7 @@ export function RTabSwitcher({
       {tabs.map((tab) => (
         <RTab
           count={tab.count}
+          icon={tab.icon}
           id={tab.id}
           isSelected={tab.id === activeTabId}
           key={tab.id}

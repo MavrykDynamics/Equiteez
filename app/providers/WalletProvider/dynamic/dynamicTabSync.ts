@@ -1,0 +1,153 @@
+/**
+ * Keeps this app's tabs from working with an outdated Dynamic session.
+ *
+ * Dynamic keeps the session's signing key in a keychain shared by every tab
+ * of the origin, but each tab's SDK reads its session only when it starts.
+ * Starting without a session or signing out replaces that key, so another tab
+ * still holding the old session (or the old key, while signed out) fails every
+ * signed request: "Forbidden", or the SDK ends its sign-in midway.
+ *
+ * Each tab whose SDK is loaded tells the others which session it has:
+ * - another tab has a different live session: this tab is outdated and
+ *   reloads to pick it up (unseen, or at once when a sign-in starts here);
+ * - another tab has none (it signed out or started without one): the key this
+ *   tab holds is stale, and a new sign-in here first gets a fresh one. No
+ *   reload: a reloaded tab without a session would replace the key again.
+ */
+const CHANNEL_NAME = "equiteez:dynamic-session";
+
+/** Logouts after which the SDK keeps the shared key (another tab owns it) */
+const SHARED_KEY_LOGOUT_REASONS = new Set(["keychain-session-key-mismatch"]);
+
+type SessionMessage = {
+  tabId: string;
+  /** Expiry of the announcing tab's session; null when it has none */
+  sessionExpiresAt: number | null;
+};
+
+let tabId: string | null = null;
+
+/**
+ * This tab's id, made on first use: Cloudflare Workers refuse random values
+ * in global scope, and this module is part of the server bundle too.
+ */
+function getTabId() {
+  tabId ??=
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`;
+
+  return tabId;
+}
+
+let isOutdated = false;
+let isKeyStale = false;
+
+/** Another tab has a live session this tab does not: reload to use it. */
+export const isDynamicTabOutdated = () => isOutdated;
+
+/** Another tab replaced the signing key: sign-ins here need a fresh one. */
+export const isDynamicKeyStale = () => isKeyStale;
+
+/** This tab got a fresh key (its SDK signed out and made one). */
+export const markDynamicKeyFresh = () => {
+  isKeyStale = false;
+};
+
+/** Reloads now: used when the user starts a sign-in in an outdated tab */
+export const reloadOutdatedTab = () => window.location.reload();
+
+const openChannel = () =>
+  typeof BroadcastChannel === "undefined"
+    ? null
+    : new BroadcastChannel(CHANNEL_NAME);
+
+const isSessionMessage = (data: unknown): data is SessionMessage => {
+  if (!data || typeof data !== "object") return false;
+
+  const { tabId, sessionExpiresAt } = data as Record<string, unknown>;
+
+  return (
+    typeof tabId === "string" &&
+    (sessionExpiresAt === null || typeof sessionExpiresAt === "number")
+  );
+};
+
+/** Tells the other tabs which Dynamic session this tab now has. */
+export function announceDynamicSession(sessionExpiresAt: number | null) {
+  const channel = openChannel();
+
+  if (!channel) return;
+
+  channel.postMessage({
+    tabId: getTabId(),
+    sessionExpiresAt,
+  } satisfies SessionMessage);
+  channel.close();
+}
+
+/** Whether a logout replaced the shared key, so other tabs must hear of it */
+export const doesLogoutReplaceSharedKey = (reason: string | null) =>
+  !reason || !SHARED_KEY_LOGOUT_REASONS.has(reason);
+
+/**
+ * Follows the other tabs' announcements. `onOutdated` runs once, when this
+ * tab first becomes outdated. Returns the unsubscribe function.
+ */
+export function watchOtherTabsDynamicSessions({
+  getOwnSessionExpiresAt,
+  ready,
+  onOutdated,
+}: {
+  getOwnSessionExpiresAt: () => number | null;
+  /** Settles once this tab's SDK has read its own session */
+  ready: Promise<unknown>;
+  onOutdated: () => void;
+}): () => void {
+  const channel = openChannel();
+
+  if (!channel) return () => undefined;
+
+  let isReady = false;
+  // The latest announcement heard while this tab's SDK was starting
+  let pendingMessage: SessionMessage | null = null;
+
+  const handleMessage = (message: SessionMessage) => {
+    const own = getOwnSessionExpiresAt();
+
+    if (own !== null && own === message.sessionExpiresAt) return;
+
+    if (message.sessionExpiresAt === null) {
+      isKeyStale = true;
+      return;
+    }
+
+    if (isOutdated) return;
+    isOutdated = true;
+    onOutdated();
+  };
+
+  const settle = () => {
+    isReady = true;
+    if (pendingMessage) handleMessage(pendingMessage);
+    pendingMessage = null;
+  };
+
+  ready.then(settle, settle);
+
+  channel.onmessage = (event: MessageEvent<unknown>) => {
+    const message = event.data;
+
+    if (!isSessionMessage(message) || message.tabId === getTabId()) return;
+
+    if (isReady) handleMessage(message);
+    else pendingMessage = message;
+  };
+
+  return () => channel.close();
+}
+
+export function resetDynamicTabSyncForTests() {
+  isOutdated = false;
+  isKeyStale = false;
+}

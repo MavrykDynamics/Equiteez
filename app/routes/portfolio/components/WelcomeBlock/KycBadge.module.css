@@ -1,0 +1,27 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--r-space-1);
+  padding: 2px var(--r-space-3) 2px var(--r-space-2);
+  font-family: var(--r-font-body);
+  font-size: var(--r-font-size-body-s);
+  line-height: var(--r-line-height-body-s);
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: var(--r-radius-pill);
+}
+
+.verified {
+  color: var(--r-color-green-700);
+  background: rgba(122, 201, 157, 0.25);
+}
+
+.notVerified {
+  color: var(--r-color-yellow-700);
+  background: rgba(242, 209, 107, 0.25);
+}
+
+.tabMark {
+  display: flex;
+  color: var(--r-color-yellow-300);
+}

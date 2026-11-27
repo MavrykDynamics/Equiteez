@@ -49,3 +49,8 @@
 .description {
   color: var(--r-color-neutral-700);
 }
+
+.link {
+  color: var(--r-color-neutral-black);
+  text-decoration: underline;
+}

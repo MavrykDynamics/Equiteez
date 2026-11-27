@@ -19,6 +19,8 @@ import type { EthereumContext } from "~/providers/EthereumProvider/ethereum.prov
 import { useUsdtBridgeEstimate } from "~/providers/EthereumProvider/hooks/useUsdtBridgeEstimate";
 
 import styles from "../RDepositFundsModal.module.css";
+import { toUnavailableLabel } from "~/providers/WalletProvider/capabilities";
+import { useActionAvailability } from "~/providers/WalletProvider/useActionAvailability";
 
 type BridgeViewProps = {
   depositAmount: BigNumber | undefined;
@@ -167,6 +169,12 @@ export function BridgeView({
     refreshBalance,
     error,
   } = ethereumWallet;
+  // The connected Mavryk wallet must be allowed to receive bridge deposits
+  const depositAvailability = useActionAvailability("bridge.deposit");
+  const depositUnavailableReason =
+    mavrykAddress && !depositAvailability.isAllowed
+      ? depositAvailability.reason
+      : undefined;
   const isBusy =
     isConnecting ||
     isReconnecting ||
@@ -337,6 +345,7 @@ export function BridgeView({
         className={styles.connectButton}
         disabled={
           isWrongNetwork ||
+          Boolean(depositUnavailableReason) ||
           (isConnected && Boolean(mavrykAddress) && !canDeposit)
         }
         isLoading={isBusy}
@@ -344,11 +353,13 @@ export function BridgeView({
         size="medium"
         tone="black"
       >
-        {!isConnected
-          ? "Connect Ethereum Wallet"
-          : !mavrykAddress
-            ? "Connect Mavryk Wallet"
-            : "Deposit Funds"}
+        {depositUnavailableReason
+          ? toUnavailableLabel(depositUnavailableReason)
+          : !isConnected
+            ? "Connect Ethereum Wallet"
+            : !mavrykAddress
+              ? "Connect Mavryk Wallet"
+              : "Deposit Funds"}
       </RButton>
     </div>
   );

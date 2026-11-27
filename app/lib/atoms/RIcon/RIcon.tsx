@@ -21,13 +21,22 @@ export type RIconName =
   | "check"
   | "close"
   | "copy"
+  | "copy-16"
+  | "dots"
+  | "eye"
+  | "eye-off"
+  | "settings"
+  | "sign-out"
   | "cross"
   | "heart"
   | "house"
   | "grid"
   | "info"
+  | "info-circle"
+  | "info-16"
   | "image"
   | "link"
+  | "link-16"
   | "list"
   | "loading"
   | "loading-progress"
@@ -35,6 +44,7 @@ export type RIconName =
   | "lock-open"
   | "ok"
   | "radio"
+  | "refresh"
   | "refund"
   | "search"
   | "sort"
@@ -44,6 +54,7 @@ export type RIconName =
   | "trending-down"
   | "trending-up"
   | "upload"
+  | "warning"
   | "nav-discovery"
   | "nav-portfolio"
   | "nav-trade"
@@ -54,6 +65,11 @@ export type RIconSortDirection = "ascending" | "descending";
 
 export type RIconProps = Omit<SVGProps<SVGSVGElement>, "name"> & {
   name: RIconName;
+  /** Turns the icon continuously; loading icons always spin */
+  isSpinning?: boolean;
+  /** "dots" only: the dots stand on one line and hop up in turn, like a
+   *  loader */
+  isBouncing?: boolean;
   size?: RIconSize;
   sortDirection?: RIconSortDirection;
   title?: string;
@@ -94,6 +110,28 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       <path d="M9 7h8v8" />
     </>
   ),
+  // Figma "Restore: restoring your wallet" badge icon, 1px stroke
+  refresh: (
+    <path
+      d="M10.2471 15.3333H5.86542V19.5M13.7524 8.66667H18.1341V4.5M5.5 9.50284C5.99135 8.34638 6.814 7.3442 7.87446 6.61019C8.93492 5.87618 10.1918 5.4396 11.5 5.35042C12.8083 5.26125 14.1159 5.52284 15.2756 6.10551C16.4353 6.68819 17.399 7.56878 18.0588 8.64677M18.5 14.4976C18.0087 15.654 17.186 16.6562 16.1255 17.3902C15.0651 18.1242 13.8095 18.5602 12.5013 18.6494C11.193 18.7386 9.88434 18.477 8.72463 17.8944C7.56492 17.3117 6.60051 16.4313 5.94073 15.3533"
+      strokeWidth={1}
+    />
+  ),
+  // Figma "Signing in" pill icon: three rising dots on a 16px grid, one
+  // circle each so isBouncing can lift them in turn
+  dots: (
+    <>
+      <circle cx="4" cy="9.333" fill="currentColor" r="0.667" strokeWidth={1} />
+      <circle cx="8" cy="8" fill="currentColor" r="0.667" strokeWidth={1} />
+      <circle
+        cx="12"
+        cy="6.667"
+        fill="currentColor"
+        r="0.667"
+        strokeWidth={1}
+      />
+    </>
+  ),
   "arrow-round": (
     <>
       <path d="M17 2v5h-5" />
@@ -122,6 +160,20 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       transform="translate(5.5 5.5)"
     />
   ),
+  // Figma "icon/copy" and "icon/link" drawn on a 16px grid (12px and 10px
+  // glyphs, 1px line), e.g. the wallet card's address actions
+  "copy-16": (
+    <path
+      d="M6 6V4.13346C6 3.38673 6 3.01308 6.14532 2.72786C6.27316 2.47698 6.47698 2.27316 6.72786 2.14532C7.01308 2 7.38673 2 8.13346 2H11.8668C12.6135 2 12.9867 2 13.2719 2.14532C13.5228 2.27316 13.727 2.47698 13.8548 2.72786C14.0001 3.01308 14.0001 3.38645 14.0001 4.13319V7.86654C14.0001 8.61327 14.0001 8.98664 13.8548 9.27186C13.727 9.52274 13.5226 9.72699 13.2717 9.85482C12.9868 10 12.614 10 11.8687 10H10M10 10L10 8.1313C10 7.386 10 7.0128 9.85482 6.72786C9.72699 6.47698 9.5228 6.27316 9.27192 6.14532C8.98671 6 8.61353 6 7.8668 6H6H4.13346C3.38673 6 3.01308 6 2.72786 6.14532C2.47698 6.27316 2.27316 6.47698 2.14532 6.72786C2 7.01308 2 7.38673 2 8.13346V11.8668C2 12.6135 2 12.9867 2.14532 13.2719C2.27316 13.5228 2.47698 13.727 2.72786 13.8548C3.0128 14 3.386 14 4.13127 14H7.86903C8.61431 14 8.98698 14 9.27192 13.8548C9.5228 13.727 9.72699 13.5226 9.85482 13.2717C10 12.9868 10 12.614 10 11.8687V10Z"
+      strokeWidth={1}
+    />
+  ),
+  "link-16": (
+    <path
+      d="M6.33346 3.66667H5.13346C4.38673 3.66667 4.01308 3.66667 3.72786 3.81199C3.47698 3.93982 3.27316 4.14365 3.14532 4.39453C3 4.67975 3 5.05339 3 5.80013V10.8668C3 11.6135 3 11.9867 3.14532 12.2719C3.27316 12.5228 3.47698 12.727 3.72786 12.8548C4.0128 13 4.386 13 5.13127 13H10.2021C10.9473 13 11.32 13 11.6049 12.8548C11.8558 12.727 12.0603 12.5226 12.1882 12.2717C12.3333 11.9868 12.3333 11.614 12.3333 10.8687V9.66667M9.66667 3H13V6.33333M13 3L8.33333 7.66667"
+      strokeWidth={1}
+    />
+  ),
   copy: (
     <path
       d="M4.5 4.5V2.633c0-.746 0-1.12.145-1.405A2 2 0 0 1 5.228.645C5.513.5 5.887.5 6.633.5h3.734c.746 0 1.12 0 1.405.145a2 2 0 0 1 .583.583c.145.285.145.658.145 1.405v3.734c0 .746 0 1.12-.145 1.405a2 2 0 0 1-.583.583C11.487 8.5 11.114 8.5 10.369 8.5H8.5m0 0V6.631c0-.745 0-1.118-.145-1.403a2 2 0 0 0-.583-.583C7.487 4.5 7.114 4.5 6.367 4.5H2.633c-.746 0-1.12 0-1.405.145a2 2 0 0 0-.583.583C.5 5.513.5 5.887.5 6.633v3.734c0 .746 0 1.12.145 1.405a2 2 0 0 0 .583.583c.285.145.658.145 1.403.145h3.738c.745 0 1.118 0 1.403-.145a2 2 0 0 0 .583-.583C8.5 11.487 8.5 11.114 8.5 10.369V8.5Z"
@@ -138,6 +190,34 @@ const rIconPaths: Record<RIconName, ReactNode> = {
     <path
       d="M6.5 2.60283C5.16667-.526792.5-.193458.5 3.80656c0 4 6 7.33344 6 7.33344s6-3.33342 6-7.33344c0-4-4.66667-4.33335-6-1.20373Z"
       transform="translate(5.5 6.18)"
+    />
+  ),
+  eye: (
+    <>
+      <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" />
+      <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z" />
+    </>
+  ),
+  "eye-off": (
+    <>
+      <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" />
+      <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z" />
+      <path d="m4 4 16 16" />
+    </>
+  ),
+  // Figma 16px glyphs scaled into the 24 grid with the same 1.5 stroke
+  settings: (
+    <path
+      d="M9.33333 10H14M2 10H3.33333M3.33333 10C3.33333 10.9205 4.07953 11.6667 5 11.6667C5.92047 11.6667 6.66667 10.9205 6.66667 10C6.66667 9.07953 5.92047 8.33333 5 8.33333C4.07953 8.33333 3.33333 9.07953 3.33333 10ZM13.3333 6H14M2 6H6.66667M11 7.66667C10.0795 7.66667 9.33333 6.92047 9.33333 6C9.33333 5.07953 10.0795 4.33333 11 4.33333C11.9205 4.33333 12.6667 5.07953 12.6667 6C12.6667 6.92047 11.9205 7.66667 11 7.66667Z"
+      strokeWidth={1}
+      transform="scale(1.5)"
+    />
+  ),
+  "sign-out": (
+    <path
+      d="M8 6L10 8L8 10M10 8H2.66667M6 4.83239V4.80013C6 4.05339 6 3.67975 6.14532 3.39453C6.27316 3.14365 6.47698 2.93982 6.72786 2.81199C7.01308 2.66667 7.38673 2.66667 8.13346 2.66667H11.2001C11.9469 2.66667 12.3197 2.66667 12.6049 2.81199C12.8558 2.93982 13.0603 3.14365 13.1882 3.39453C13.3333 3.67947 13.3333 4.05266 13.3333 4.79794V11.2024C13.3333 11.9477 13.3333 12.3203 13.1882 12.6053C13.0603 12.8561 12.8558 13.0603 12.6049 13.1882C12.32 13.3333 11.9473 13.3333 11.2021 13.3333H8.13127C7.386 13.3333 7.0128 13.3333 6.72786 13.1882C6.47698 13.0603 6.27316 12.8559 6.14532 12.6051C6 12.3198 6 11.9467 6 11.2V11.1667"
+      strokeWidth={1}
+      transform="scale(1.5)"
     />
   ),
   house: (
@@ -163,6 +243,17 @@ const rIconPaths: Record<RIconName, ReactNode> = {
         strokeLinejoin="round"
       />
     </>
+  ),
+  // Figma "icon/info" on a 16px grid (12px circle, 1px line)
+  "info-16": (
+    <path
+      d="M8 7.33333V10.6667M8 14C4.68629 14 2 11.3137 2 8C2 4.68629 4.68629 2 8 2C11.3137 2 14 4.68629 14 8C14 11.3137 11.3137 14 8 14ZM8.0332 5.33333V5.4L7.9668 5.40013V5.33333H8.0332Z"
+      strokeWidth={1}
+    />
+  ),
+  /** Full-size info circle (Figma 16px icon), used by the KYC status UI */
+  "info-circle": (
+    <path d="M12 8.45V12.45M12 21C7.029 21 3 16.971 3 12S7.029 3 12 3s9 4.029 9 9-4.029 9-9 9ZM12.05 15.45V15.55L11.95 15.548V15.45H12.05Z" />
   ),
   image: (
     <>
@@ -298,6 +389,9 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       />
     </>
   ),
+  warning: (
+    <path d="M12 9V13M4.379 15.2C3.47 16.775 3.015 17.563 3.083 18.209C3.142 18.773 3.438 19.285 3.896 19.618C4.422 20 5.331 20 7.149 20H16.851C18.669 20 19.578 20 20.103 19.618C20.562 19.285 20.858 18.773 20.917 18.209C20.985 17.563 20.531 16.775 19.621 15.2L14.771 6.8C13.862 5.225 13.407 4.437 12.813 4.173C12.296 3.942 11.704 3.942 11.186 4.173C10.593 4.437 10.138 5.225 9.229 6.798L4.379 15.2ZM12.051 16V16.1L11.95 16.1V16H12.051Z" />
+  ),
   "nav-discovery": (
     <>
       <path
@@ -316,12 +410,40 @@ const rIconPaths: Record<RIconName, ReactNode> = {
   ),
 };
 
+/** "dots" with isBouncing: the three dots on one line, each hopping up in
+ *  turn (the static icon keeps Figma's rising dots) */
+const LEVEL_DOTS = (
+  <>
+    {[4, 8, 12].map((cx) => (
+      <circle
+        cx={cx}
+        cy="8"
+        fill="currentColor"
+        key={cx}
+        r="0.667"
+        strokeWidth={1}
+      />
+    ))}
+  </>
+);
+
+/** Icons drawn on a 16px grid; the rest use 24px */
+const SMALL_GRID_ICONS = new Set<RIconName>([
+  "sort",
+  "dots",
+  "copy-16",
+  "link-16",
+  "info-16",
+]);
+
 export function RIcon({
   name,
   size = "medium",
   title,
   className,
   sortDirection,
+  isSpinning = false,
+  isBouncing = false,
   ...props
 }: RIconProps) {
   const titleId = useId();
@@ -334,7 +456,9 @@ export function RIcon({
       className={clsx(
         styles.icon,
         styles[size],
-        (name === "loading" || name === "loading-progress") && styles.spin,
+        (isSpinning || name === "loading" || name === "loading-progress") &&
+          styles.spin,
+        isBouncing && name === "dots" && styles.bounce,
         className
       )}
       fill="none"
@@ -346,11 +470,11 @@ export function RIcon({
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth={name === "sort" ? 1 : 1.5}
-      viewBox={name === "sort" ? "0 0 16 16" : "0 0 24 24"}
+      viewBox={SMALL_GRID_ICONS.has(name) ? "0 0 16 16" : "0 0 24 24"}
       {...props}
     >
       {title ? <title id={titleId}>{title}</title> : null}
-      {rIconPaths[name]}
+      {name === "dots" && isBouncing ? LEVEL_DOTS : rIconPaths[name]}
     </Icon>
   );
 }

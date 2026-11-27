@@ -130,7 +130,13 @@
   .navigation {
     display: none;
   }
-  .wallet {
+}
+
+/* Small phones: no room for Deposit next to the wallet pill; the email
+   wallet panel and Portfolio keep their own Deposit */
+@media (--media-phone) {
+  .wallet .depositButton,
+  .depositSkeleton {
     display: none;
   }
 }

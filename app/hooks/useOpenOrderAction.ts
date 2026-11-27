@@ -13,6 +13,7 @@ import {
   useFreshQueryInvalidation,
 } from "~/lib/apis/rwa/freshness";
 import { STATUS_ERROR, STATUS_SUCCESS } from "~/lib/ui/use-status-flag";
+import { useActionAvailability } from "~/providers/WalletProvider/useActionAvailability";
 
 type UseOpenOrderActionOptions = {
   assetSymbol: string;
@@ -70,7 +71,7 @@ export function useOpenOrderAction({
             "Your cancellation transaction was confirmed. You'll receive a notification when the order is updated.",
         },
       },
-      { onSuccess: handleAfterAction }
+      { onSuccess: handleAfterAction, action: "orderbook.cancel" }
     );
   const { invokeAction: invokeRefundOrder, status: refundStatus } =
     useContractAction(
@@ -84,11 +85,17 @@ export function useOpenOrderAction({
             "Your refund transaction was confirmed. You'll receive a notification when the refund is processed.",
         },
       },
-      { onSuccess: handleAfterAction }
+      { onSuccess: handleAfterAction, action: "orderbook.refund" }
     );
 
   const isRefundAction = !order.can_cancel;
   const activeActionStatus = isRefundAction ? refundStatus : cancelStatus;
+  const availability = useActionAvailability(
+    isRefundAction ? "orderbook.refund" : "orderbook.cancel"
+  );
+  const unavailableReason = availability.isAllowed
+    ? undefined
+    : availability.reason;
 
   useEffect(() => {
     if (
@@ -114,7 +121,9 @@ export function useOpenOrderAction({
       ? `Request refund for ${assetSymbol} order`
       : `Cancel ${assetSymbol} order`,
     handleClosePopup: () => setIsPopupOpen(false),
-    handleOpenPopup: () => setIsPopupOpen(true),
+    handleOpenPopup: () => {
+      if (!unavailableReason) setIsPopupOpen(true);
+    },
     handleOrderAction,
     isPopupOpen,
     popupDescription: isRefundAction
@@ -122,5 +131,7 @@ export function useOpenOrderAction({
       : "Are you sure you want to cancel your order?",
     popupSubmitLabel: isRefundAction ? "Claim Refund" : "Cancel Order",
     popupTitle: isRefundAction ? "Confirm Refund" : "Cancel Open Order",
+    /** Why the connected wallet cannot cancel/refund; undefined when it can */
+    unavailableReason,
   };
 }

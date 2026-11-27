@@ -1,6 +1,5 @@
 import { Container } from "~/lib/atoms/Container/Container";
 import { RSkeleton } from "~/lib/atoms/RSkeleton";
-import { RText } from "~/lib/atoms/RTypography/RText";
 
 import pageStyles from "../../styles.module.css";
 import styles from "./TradePageSkeleton.module.css";
@@ -86,13 +85,6 @@ function LocationSkeleton() {
 export function TradePageSkeleton() {
   return (
     <Container className={pageStyles.tradeContainer}>
-      <RText
-        className={pageStyles.viewOnlyNotice}
-        color="neutral-700"
-        size="body-s"
-      >
-        View-only on mobile. Open on desktop to trade.
-      </RText>
       <div aria-busy="true" className={pageStyles.contentBlock}>
         <div className={pageStyles.mainContent}>
           <div className={styles.details}>
