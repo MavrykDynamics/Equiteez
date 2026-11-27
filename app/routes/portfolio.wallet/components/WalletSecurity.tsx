@@ -209,8 +209,8 @@ function WalletBackupAndExport({
         <div className={styles.infoMessage}>
           <RIcon aria-hidden="true" name="info-circle" size="small" />
           <RText size="body-sm">
-            Google will ask you to allow one file in your Drive. Tick both
-            Google Drive boxes.
+            Google will ask you to allow one file in your Drive, then bring you
+            back here to finish.
           </RText>
         </div>
         <RButton

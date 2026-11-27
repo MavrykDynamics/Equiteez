@@ -10,14 +10,13 @@ import { useNotificationsContext } from "~/providers/NotificationsProvider/Notif
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { getTrimmedHash } from "~/lib/utils";
 import { useKycStatus } from "~/lib/kyc/useKycStatus";
-import { KycBadge, KycTabMark } from "./KycBadge";
+import { KycBadge } from "./KycBadge";
 
 export function WelcomeBlock({ activeTab }: { activeTab: string }) {
   const navigate = useNavigate();
   const { userAddress } = useUserContext();
   const { unreadNotificationsCount } = useNotificationsContext();
   const kycStatus = useKycStatus();
-  const isKycMissing = kycStatus.isLoaded && !kycStatus.isKyced;
 
   const tabs = useMemo(
     () => [
@@ -42,10 +41,9 @@ export function WelcomeBlock({ activeTab }: { activeTab: string }) {
       {
         id: ROUTES.portfolioWallet,
         label: "Wallet",
-        icon: isKycMissing ? <KycTabMark /> : undefined,
       },
     ],
-    [isKycMissing, unreadNotificationsCount]
+    [unreadNotificationsCount]
   );
 
   return (
