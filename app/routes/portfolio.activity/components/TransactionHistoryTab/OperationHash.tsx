@@ -1,7 +1,7 @@
 import { useMemo, type MouseEvent } from "react";
 import clsx from "clsx";
 
-import { RIcon } from "~/lib/atoms/RIcon";
+import { RIcon, type RIconSize } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { NEXUS_LINK } from "~/consts";
 import useTippy from "~/lib/ui/useTippy";
@@ -12,6 +12,11 @@ type OperationHashProps = {
   className?: string;
   /** The copy tooltip: "Copy address" when the hash is an address */
   copyLabel?: string;
+  /**
+   * "medium" draws the copy glyph at 12px (Figma Wallet → Signing key) while
+   * it keeps its 16px slot, so the row height and gaps stay the same
+   */
+  copyIconSize?: RIconSize;
   display?: "full" | "short";
   operationHash: string;
   /** False for values Nexus has no page for, such as a public key */
@@ -37,6 +42,7 @@ function getNexusEntityPath(operationHash: string) {
 export function OperationHash({
   className,
   copyLabel = "Copy hash",
+  copyIconSize = "small",
   display = "short",
   operationHash,
   withNexusLink = true,
@@ -90,8 +96,18 @@ export function OperationHash({
         <RText className={styles.hashText} size="body-sm">
           {display === "short" ? getShortHash(operationHash) : operationHash}
         </RText>
-        <span className={styles.action}>
-          <RIcon name="copy" size="small" />
+        <span
+          className={clsx(
+            styles.action,
+            copyIconSize === "medium" && styles.actionLargeIcon
+          )}
+        >
+          <RIcon
+            name="copy"
+            size={copyIconSize}
+            // 1px line at either size, like the 16px icons next to it
+            {...(copyIconSize === "medium" ? { strokeWidth: 1 } : {})}
+          />
         </span>
       </div>
 

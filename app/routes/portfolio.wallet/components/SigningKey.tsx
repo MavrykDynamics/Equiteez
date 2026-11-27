@@ -44,6 +44,7 @@ export function SigningKey() {
           <Detail label="Address">
             <OperationHash
               copyLabel="Copy address"
+              copyIconSize="medium"
               display="full"
               operationHash={address}
             />
@@ -53,6 +54,7 @@ export function SigningKey() {
           <Detail label="Public key">
             <OperationHash
               copyLabel="Copy public key"
+              copyIconSize="medium"
               display="full"
               operationHash={identity.publicKey}
               withNexusLink={false}

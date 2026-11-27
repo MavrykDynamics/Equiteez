@@ -45,6 +45,15 @@
   cursor: pointer;
   transition: color var(--r-transition-duration-fast) ease;
 }
+/* A 24px icon (12px glyph) centred in the 16px slot */
+.actionLargeIcon {
+  overflow: visible;
+}
+
+.actionLargeIcon > svg {
+  margin: calc((var(--r-size-icon-small) - var(--r-size-icon-medium)) / 2);
+}
+
 .actionLink {
   padding: 2px;
   display: flex;
