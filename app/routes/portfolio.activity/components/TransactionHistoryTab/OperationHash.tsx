@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { RIcon, type RIconSize } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { NEXUS_LINK } from "~/consts";
+import useCopyToClipboard from "~/lib/ui/useCopyToClipboard";
 import useTippy from "~/lib/ui/useTippy";
 
 import styles from "./OperationHash.module.css";
@@ -48,17 +49,19 @@ export function OperationHash({
   withNexusLink = true,
 }: OperationHashProps) {
   const nexusEntityPath = getNexusEntityPath(operationHash);
+  // "Copied!" for 2 seconds after a copy, then the label again
+  const { copied, setCopied } = useCopyToClipboard();
   const copyTooltipRef = useTippy<HTMLDivElement>(
     useMemo(
       () => ({
         animation: "shift-away-subtle",
-        content: copyLabel,
+        content: copied ? "Copied!" : copyLabel,
         hideOnClick: false,
         placement: "top" as const,
         theme: "operation-hash",
         trigger: "mouseenter focus",
       }),
-      [copyLabel]
+      [copied, copyLabel]
     )
   );
   const nexusTooltipRef = useTippy<HTMLAnchorElement>(
@@ -75,8 +78,19 @@ export function OperationHash({
     )
   );
 
-  const handleCopy = () => {
-    void navigator.clipboard?.writeText(operationHash);
+  const handleCopy = async () => {
+    if (!navigator.clipboard) {
+      console.error("OperationHash: the clipboard is not available");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(operationHash);
+      setCopied(true);
+    } catch (error) {
+      // Leave the label as it is: nothing was copied
+      console.error("OperationHash: copy failed", error);
+    }
   };
 
   const handleActionClick = (event: MouseEvent<HTMLElement>) => {
@@ -90,7 +104,7 @@ export function OperationHash({
         ref={copyTooltipRef}
         onClick={(event) => {
           handleActionClick(event);
-          handleCopy();
+          void handleCopy();
         }}
       >
         <RText className={styles.hashText} size="body-sm">
