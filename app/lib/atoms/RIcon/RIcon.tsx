@@ -33,6 +33,7 @@ export type RIconName =
   | "grid"
   | "info"
   | "info-circle"
+  | "info-16"
   | "image"
   | "link"
   | "link-16"
@@ -233,6 +234,13 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       />
     </>
   ),
+  // Figma "icon/info" on a 16px grid (12px circle, 1px line)
+  "info-16": (
+    <path
+      d="M8 7.33333V10.6667M8 14C4.68629 14 2 11.3137 2 8C2 4.68629 4.68629 2 8 2C11.3137 2 14 4.68629 14 8C14 11.3137 11.3137 14 8 14ZM8.0332 5.33333V5.4L7.9668 5.40013V5.33333H8.0332Z"
+      strokeWidth={1}
+    />
+  ),
   /** Full-size info circle (Figma 16px icon), used by the KYC status UI */
   "info-circle": (
     <path d="M12 8.45V12.45M12 21C7.029 21 3 16.971 3 12S7.029 3 12 3s9 4.029 9 9-4.029 9-9 9ZM12.05 15.45V15.55L11.95 15.548V15.45H12.05Z" />
@@ -398,6 +406,7 @@ const SMALL_GRID_ICONS = new Set<RIconName>([
   "dots",
   "copy-16",
   "link-16",
+  "info-16",
 ]);
 
 export function RIcon({

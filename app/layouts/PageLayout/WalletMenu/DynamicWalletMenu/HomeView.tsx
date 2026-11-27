@@ -6,6 +6,7 @@ import Money from "~/lib/atoms/Money";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RSkeleton } from "~/lib/atoms/RSkeleton";
+import { RTooltip } from "~/lib/atoms/RTooltip";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 import { AssetIcon } from "~/templates/AssetIcon";
@@ -25,6 +26,9 @@ import {
 import styles from "./DynamicWalletPanel.module.css";
 
 const SKELETON_ROWS = 3;
+
+const ASSETS_HINT =
+  "All assets shown are strictly those held in your on-chain wallet. It does not include assets and stables held in orders.";
 
 const formatTime = (timestamp: number) =>
   new Date(timestamp).toLocaleTimeString([], {
@@ -148,9 +152,20 @@ export function HomeView({
 
       <section aria-label="Assets" className={styles.assets}>
         <div className={styles.assetsHeader}>
-          <RText size="body-m" weight="medium">
-            Assets
-          </RText>
+          <div className={styles.assetsTitle}>
+            <RText size="body-m" weight="medium">
+              Assets
+            </RText>
+            <RTooltip content={ASSETS_HINT} maxWidth={264}>
+              <button
+                aria-label={ASSETS_HINT}
+                className={styles.assetsHint}
+                type="button"
+              >
+                <RIcon aria-hidden="true" name="info-16" size="small" />
+              </button>
+            </RTooltip>
+          </div>
           {portfolioUpdatedAt ? (
             <RText color="neutral-700" size="body-s">
               Updated {formatTime(portfolioUpdatedAt)}

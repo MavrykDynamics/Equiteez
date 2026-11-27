@@ -265,6 +265,29 @@
   padding-bottom: var(--r-space-1);
 }
 
+/* Figma: "Assets", then the info icon 4px on, sitting 3px above the
+   text's bottom */
+.assetsTitle {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--r-space-1);
+}
+
+.assetsHint {
+  display: flex;
+  margin-bottom: 3px;
+  padding: 0;
+  color: var(--r-color-neutral-700);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-radius-xs);
+}
+
+.assetsHint:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}
+
 .assetList {
   margin: 0;
   padding: 0;
