@@ -5,11 +5,12 @@ import Money from "~/lib/atoms/Money";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { toFiatPrice } from "~/lib/formaters/formaters";
 import { OperationHash } from "~/routes/portfolio.activity/components/TransactionHistoryTab/OperationHash";
 import { AssetIcon } from "~/templates/AssetIcon";
 
 import { PanelHeader, type WalletPanelView } from "./DynamicWalletPanel";
-import { AssetBadge, hasPrice, HIDDEN_VALUE, NETWORK_LABEL } from "./parts";
+import { AssetBadge, HIDDEN_VALUE, NETWORK_LABEL } from "./parts";
 import { useWalletPanelAssets } from "./useWalletPanelAssets";
 import styles from "./DynamicWalletPanel.module.css";
 
@@ -85,17 +86,10 @@ export function AssetView({
           {metadata.symbol}
         </span>
         <RText color="neutral-700" size="body-s">
-          {hasPrice(asset) && asset.priceUsd ? (
-            <>
-              $
-              <Money fiat tooltip={false}>
-                {asset.priceUsd}
-              </Money>{" "}
-              per token
-            </>
-          ) : (
-            "No price source yet"
-          )}
+          {/* A zero price is no price source; a tiny one keeps its digits */}
+          {asset.priceUsd?.gt(0)
+            ? `$${toFiatPrice(asset.priceUsd)} per token`
+            : "No price source yet"}
         </RText>
       </div>
 

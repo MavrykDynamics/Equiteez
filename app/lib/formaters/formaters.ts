@@ -106,3 +106,28 @@ function localizeDefaultFormattedNumber(formattedNumber: string) {
   }
   return formattedNumber.replace(/,/g, numberSymbols.group);
 }
+
+/**
+ * A fiat price: 2 decimals, but a price under 0.01 keeps its first two
+ * significant digits instead of reading as zero (0.0001323 → "0.00013",
+ * 0.005 → "0.005"). Rounds down, like Money.
+ */
+export function toFiatPrice(value: BigNumber.Value) {
+  const bn = new BigNumber(value);
+  const abs = bn.abs();
+
+  if (!bn.isFinite() || abs.isZero() || abs.gte(0.01)) {
+    return toLocalFormat(bn, {
+      decimalPlaces: 2,
+      roundingMode: BigNumber.ROUND_DOWN,
+    });
+  }
+
+  // Zeros right after the point: 0.0001323 → 3
+  const leadingZeros = -Math.floor(Math.log10(abs.toNumber())) - 1;
+  const truncated = bn.decimalPlaces(leadingZeros + 2, BigNumber.ROUND_DOWN);
+
+  return toLocalFormat(truncated, {
+    decimalPlaces: truncated.decimalPlaces() ?? 0,
+  });
+}
