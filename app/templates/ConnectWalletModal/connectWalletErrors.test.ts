@@ -110,6 +110,32 @@ describe("describeConnectError", () => {
       "connect",
       "The wallet returned an invalid signature. Nothing was sent.",
     ],
+    [new Error("Network Error"), "connect", CONNECT_ERROR_MESSAGES.connection],
+    [
+      new Error(
+        "Error: [DynamicWaasWalletClient]: Error creating wallet account Caused by: WalletApiError: Network error - no response received"
+      ),
+      "connect",
+      CONNECT_ERROR_MESSAGES.connection,
+    ],
+    [
+      new TypeError("Failed to fetch"),
+      "code",
+      CONNECT_ERROR_MESSAGES.connection,
+    ],
+    [
+      named(
+        "GoogleSignInError",
+        "WalletApiError: Network error - no response received"
+      ),
+      "email",
+      CONNECT_ERROR_MESSAGES.connection,
+    ],
+    [
+      new Error("Request timed out"),
+      "unlock",
+      CONNECT_ERROR_MESSAGES.connection,
+    ],
     [{}, "connect", CONNECT_ERROR_MESSAGES.generic],
   ])("%s at %s → %s", (error, stage, expected) => {
     expect(describeConnectError(error, stage)).toEqual({

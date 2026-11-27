@@ -46,8 +46,13 @@ export const CONNECT_ERROR_MESSAGES = {
   unlockFailed:
     "We couldn't unlock your account. Check your password and try again.",
   network: "The Mavryk network is unavailable right now. Please try again.",
+  connection:
+    "We couldn't connect. Check your internet connection and try again.",
   generic: "Something went wrong. Please try again.",
 };
+
+const CONNECTION_ERROR =
+  /network ?error|no response received|failed to fetch|load failed|err_network|err_internet_disconnected|timed? ?out/i;
 
 const errorName = (error: unknown) =>
   error instanceof Error ? error.name : "";
@@ -92,6 +97,13 @@ export function describeConnectError(
   // already done no longer count
   if (name === "DynamicSignInInterruptedError") {
     return { kind: "message", message: text, shouldRestart: true };
+  }
+
+  // A dropped request or no connection: the SDK's raw text ("Network
+  // Error", "[DynamicWaasWalletClient]: … no response received") means
+  // nothing to the user, whichever step or flow (Google included) it hit
+  if (name !== "WrongNetworkError" && CONNECTION_ERROR.test(text)) {
+    return message(CONNECT_ERROR_MESSAGES.connection);
   }
 
   if (
