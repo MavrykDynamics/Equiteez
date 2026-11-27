@@ -162,8 +162,10 @@
 
 /* Address · copy · Nexus: the TX HASH hover of the transaction history. The
    negative margins keep the hover padding from moving anything. */
+/* Figma: the address on the left, copy · link at the right edge */
 .address {
   display: inline-flex;
+  flex: 1 1 auto;
   min-width: 0;
   align-items: center;
   gap: var(--r-space-2);
@@ -182,8 +184,10 @@
 }
 
 .addressCopy {
+  flex: 1 1 auto;
+  justify-content: space-between;
   min-width: 0;
-  gap: var(--r-space-1);
+  gap: var(--r-space-4);
   margin: -2px -2px -2px -4px;
   padding: 2px 2px 2px 4px;
   font: inherit;

@@ -9,6 +9,7 @@ import {
 import clsx from "clsx";
 
 import { RIcon } from "~/lib/atoms/RIcon";
+import useCopyToClipboard from "~/lib/ui/useCopyToClipboard";
 import useTippy from "~/lib/ui/useTippy";
 import { NEXUS_LINK } from "~/consts/links.const";
 
@@ -43,16 +44,34 @@ type AddressWithActionsProps = {
 /**
  * The wallet address on the home card: copy and "open in Nexus" behave like
  * the TX HASH cell of the transaction history (OperationHash, used as is on
- * the asset sheet), with the card's black icons from Figma.
+ * the asset sheet), with the card's black icons from Figma ("icon/copy",
+ * "icon/link"), pushed to the right edge 8px apart.
  */
 export function AddressWithActions({
   address,
   children,
   className,
 }: AddressWithActionsProps) {
+  // "Copied!" for 2 seconds after a copy, like OperationHash
+  const { copied, setCopied } = useCopyToClipboard();
   const copyTooltipRef = useTippy<HTMLButtonElement>(
-    useMemo(() => tooltip("Copy address"), [])
+    useMemo(() => tooltip(copied ? "Copied!" : "Copy address"), [copied])
   );
+
+  const handleCopy = async () => {
+    if (!navigator.clipboard) {
+      console.error("AddressWithActions: the clipboard is not available");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+    } catch (error) {
+      // Leave the label as it is: nothing was copied
+      console.error("AddressWithActions: copy failed", error);
+    }
+  };
   const nexusTooltipRef = useTippy<HTMLAnchorElement>(
     useMemo(() => tooltip("Open on Nexus"), [])
   );
@@ -62,12 +81,12 @@ export function AddressWithActions({
       <button
         aria-label="Copy address"
         className={styles.addressCopy}
-        onClick={() => void navigator.clipboard?.writeText(address)}
+        onClick={() => void handleCopy()}
         ref={copyTooltipRef}
         type="button"
       >
         {children}
-        <RIcon aria-hidden="true" name="copy" size="small" />
+        <RIcon aria-hidden="true" name="copy-16" size="small" />
       </button>
       <a
         aria-label="View in Nexus"
@@ -77,7 +96,7 @@ export function AddressWithActions({
         rel="noreferrer"
         target="_blank"
       >
-        <RIcon aria-hidden="true" name="arrow-long-up-right" size="small" />
+        <RIcon aria-hidden="true" name="link-16" size="small" />
       </a>
     </span>
   );
