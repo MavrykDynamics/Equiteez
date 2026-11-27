@@ -67,6 +67,9 @@ export type RIconProps = Omit<SVGProps<SVGSVGElement>, "name"> & {
   name: RIconName;
   /** Turns the icon continuously; loading icons always spin */
   isSpinning?: boolean;
+  /** "dots" only: the dots stand on one line and hop up in turn, like a
+   *  loader */
+  isBouncing?: boolean;
   size?: RIconSize;
   sortDirection?: RIconSortDirection;
   title?: string;
@@ -114,13 +117,20 @@ const rIconPaths: Record<RIconName, ReactNode> = {
       strokeWidth={1}
     />
   ),
-  // Figma "Signing in" pill icon: three rising dots on a 16px grid
+  // Figma "Signing in" pill icon: three rising dots on a 16px grid, one
+  // circle each so isBouncing can lift them in turn
   dots: (
-    <path
-      d="M4 10C3.63181 10 3.33333 9.70152 3.33333 9.33333C3.33333 8.96514 3.63181 8.66667 4 8.66667C4.36819 8.66667 4.66667 8.96514 4.66667 9.33333C4.66667 9.70152 4.36819 10 4 10ZM8 8.66667C7.63181 8.66667 7.33333 8.36819 7.33333 8C7.33333 7.63181 7.63181 7.33333 8 7.33333C8.36819 7.33333 8.66667 7.63181 8.66667 8C8.66667 8.36819 8.36819 8.66667 8 8.66667ZM12 7.33333C11.6318 7.33333 11.3333 7.03486 11.3333 6.66667C11.3333 6.29848 11.6318 6 12 6C12.3682 6 12.6667 6.29848 12.6667 6.66667C12.6667 7.03486 12.3682 7.33333 12 7.33333Z"
-      fill="currentColor"
-      strokeWidth={1}
-    />
+    <>
+      <circle cx="4" cy="9.333" fill="currentColor" r="0.667" strokeWidth={1} />
+      <circle cx="8" cy="8" fill="currentColor" r="0.667" strokeWidth={1} />
+      <circle
+        cx="12"
+        cy="6.667"
+        fill="currentColor"
+        r="0.667"
+        strokeWidth={1}
+      />
+    </>
   ),
   "arrow-round": (
     <>
@@ -400,6 +410,23 @@ const rIconPaths: Record<RIconName, ReactNode> = {
   ),
 };
 
+/** "dots" with isBouncing: the three dots on one line, each hopping up in
+ *  turn (the static icon keeps Figma's rising dots) */
+const LEVEL_DOTS = (
+  <>
+    {[4, 8, 12].map((cx) => (
+      <circle
+        cx={cx}
+        cy="8"
+        fill="currentColor"
+        key={cx}
+        r="0.667"
+        strokeWidth={1}
+      />
+    ))}
+  </>
+);
+
 /** Icons drawn on a 16px grid; the rest use 24px */
 const SMALL_GRID_ICONS = new Set<RIconName>([
   "sort",
@@ -416,6 +443,7 @@ export function RIcon({
   className,
   sortDirection,
   isSpinning = false,
+  isBouncing = false,
   ...props
 }: RIconProps) {
   const titleId = useId();
@@ -430,6 +458,7 @@ export function RIcon({
         styles[size],
         (isSpinning || name === "loading" || name === "loading-progress") &&
           styles.spin,
+        isBouncing && name === "dots" && styles.bounce,
         className
       )}
       fill="none"
@@ -445,7 +474,7 @@ export function RIcon({
       {...props}
     >
       {title ? <title id={titleId}>{title}</title> : null}
-      {rIconPaths[name]}
+      {name === "dots" && isBouncing ? LEVEL_DOTS : rIconPaths[name]}
     </Icon>
   );
 }

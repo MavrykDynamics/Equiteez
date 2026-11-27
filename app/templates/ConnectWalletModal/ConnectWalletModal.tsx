@@ -111,14 +111,20 @@ const isFormStep = (name: Step["name"]) =>
   name === "unlock" ||
   name === "second-factor";
 
+/** The account set-up the header pill reports while the modal runs it */
+export type SignInProgress = "creating" | "restoring";
+
 type ConnectWalletModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  /** Called with the set-up step shown, or null on any other step */
+  onProgressChange?: (progress: SignInProgress | null) => void;
 };
 
 export function ConnectWalletModal({
   isOpen,
   onClose,
+  onProgressChange,
 }: ConnectWalletModalProps) {
   const { dynamic } = useWalletContext();
   const { connect, connectWithWallet } = useUserContext();
@@ -492,6 +498,13 @@ export function ConnectWalletModal({
   };
 
   const isBusy = busy !== null;
+
+  // The header pill shows "Setting up account" / "Restoring account"
+  useEffect(() => {
+    onProgressChange?.(
+      step.name === "creating" || step.name === "restoring" ? step.name : null
+    );
+  }, [onProgressChange, step.name]);
 
   const resendSeconds = Math.max(
     0,

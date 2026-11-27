@@ -29,8 +29,39 @@
   stroke: var(--r-color-neutral-black);
 }
 
+/* "dots": each dot hops 2px up in turn, then rests */
+.bounce circle {
+  animation: rIconBounce 1.2s ease-in-out infinite;
+}
+
+.bounce circle:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.bounce circle:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes rIconBounce {
+  0%,
+  40%,
+  100% {
+    transform: translateY(0);
+  }
+
+  20% {
+    transform: translateY(-2px);
+  }
+}
+
 @keyframes rIconSpin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bounce circle {
+    animation: none;
   }
 }

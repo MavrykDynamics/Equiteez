@@ -16,7 +16,7 @@ import {
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 
-import { ConnectWalletModal } from "./ConnectWalletModal";
+import { ConnectWalletModal, type SignInProgress } from "./ConnectWalletModal";
 import { describeError } from "~/services/direct/guardedInjector";
 
 type OpenConnectWallet = () => void;
@@ -24,6 +24,8 @@ type OpenConnectWallet = () => void;
 const connectWalletModalContext = createContext<OpenConnectWallet | null>(null);
 // The sign-in modal is open: the user is going through the sign-in
 const isSigningInContext = createContext(false);
+// The modal is creating or restoring the account (null otherwise)
+const signInProgressContext = createContext<SignInProgress | null>(null);
 
 export function ConnectWalletModalProvider({
   children,
@@ -33,6 +35,7 @@ export function ConnectWalletModalProvider({
   const { dynamic } = useWalletContext();
   const { connect } = useUserContext();
   const [isOpen, setIsOpen] = useState(false);
+  const [progress, setProgress] = useState<SignInProgress | null>(null);
 
   const openConnectWallet = useCallback<OpenConnectWallet>(() => {
     if (!dynamic) {
@@ -60,8 +63,16 @@ export function ConnectWalletModalProvider({
   return (
     <connectWalletModalContext.Provider value={value}>
       <isSigningInContext.Provider value={isOpen}>
-        {children}
-        {dynamic && <ConnectWalletModal isOpen={isOpen} onClose={close} />}
+        <signInProgressContext.Provider value={isOpen ? progress : null}>
+          {children}
+          {dynamic && (
+            <ConnectWalletModal
+              isOpen={isOpen}
+              onClose={close}
+              onProgressChange={setProgress}
+            />
+          )}
+        </signInProgressContext.Provider>
       </isSigningInContext.Provider>
     </connectWalletModalContext.Provider>
   );
@@ -82,4 +93,9 @@ export function useConnectWallet(): OpenConnectWallet {
 /** True while the sign-in modal is open (email, code, password and so on) */
 export function useIsSigningIn(): boolean {
   return useContext(isSigningInContext);
+}
+
+/** "creating" or "restoring" while the modal sets the account up */
+export function useSignInProgress(): SignInProgress | null {
+  return useContext(signInProgressContext);
 }

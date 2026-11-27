@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   userAddress: null as string | null,
   provider: undefined as "dynamic" | "mavryk_extension" | undefined,
   isSigningIn: false,
+  progress: null as "creating" | "restoring" | null,
 }));
 
 vi.mock("~/providers/UserProvider/user.provider", () => ({
@@ -20,6 +21,7 @@ vi.mock("~/providers/WalletProvider/wallet.provider", () => ({
 vi.mock("~/templates/ConnectWalletModal/connectWalletModal.context", () => ({
   useConnectWallet: () => vi.fn(),
   useIsSigningIn: () => mocks.isSigningIn,
+  useSignInProgress: () => mocks.progress,
 }));
 vi.mock("./WalletMenu/MavrykWalletMenu", () => ({
   MavrykWalletMenu: () => <p>Mavryk menu</p>,
@@ -39,6 +41,7 @@ beforeEach(() => {
   (
     globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
   ).IS_REACT_ACT_ENVIRONMENT = true;
+  mocks.progress = null;
   container = document.createElement("div");
   root = createRoot(container);
 });
@@ -67,6 +70,24 @@ describe("ConnectWallet", () => {
     const visible = container.querySelector('[aria-hidden="false"]');
     expect(visible?.textContent).toBe("Signing in");
   });
+
+  it.each([
+    ["creating", "Setting up account"],
+    ["restoring", "Restoring account"],
+  ] as const)(
+    "shows a disabled status pill while %s the account",
+    async (progress, label) => {
+      mocks.userAddress = null;
+      mocks.provider = undefined;
+      mocks.isSigningIn = true;
+      mocks.progress = progress;
+      await render();
+
+      const pill = container.querySelector('[role="status"]');
+      expect(pill?.textContent).toBe(label);
+      expect(container.querySelector("button")).toBeNull();
+    }
+  );
 
   it("opens the Mavryk Wallet menu for the extension", async () => {
     mocks.userAddress = "mv1Owner";

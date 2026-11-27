@@ -5,6 +5,7 @@ import { RIcon } from "~/lib/atoms/RIcon";
 import {
   useConnectWallet,
   useIsSigningIn,
+  useSignInProgress,
 } from "~/templates/ConnectWalletModal/connectWalletModal.context";
 import { CustomSuspense } from "~/templates/CustomSuspense";
 
@@ -13,11 +14,17 @@ import { DynamicWalletMenu } from "./WalletMenu/DynamicWalletMenu/DynamicWalletM
 import { MavrykWalletMenu } from "./WalletMenu/MavrykWalletMenu";
 import { RText } from "~/lib/atoms/RTypography/RText";
 
+const SETUP_LABEL = {
+  creating: "Setting up account",
+  restoring: "Restoring account",
+} as const;
+
 export const ConnectWallet = () => {
   const { isLoading, userAddress } = useUserContext();
   const { identity } = useWalletContext();
   const openConnectWallet = useConnectWallet();
   const isSigningIn = useIsSigningIn();
+  const progress = useSignInProgress();
   const isEmailWallet = identity?.provider === "dynamic";
 
   // Opens the sign-in modal (or Mavryk Wallet directly without email wallets)
@@ -31,6 +38,14 @@ export const ConnectWallet = () => {
         ) : (
           <MavrykWalletMenu address={userAddress} />
         )
+      ) : progress ? (
+        // Figma "Creating / Restoring wallet": a disabled status pill
+        <span aria-live="polite" className={styles.setupPill} role="status">
+          <RIcon aria-hidden isBouncing name="dots" size="small" />
+          <RText color="neutral-700" size="body-sm">
+            {SETUP_LABEL[progress]}
+          </RText>
+        </span>
       ) : (
         <RButton
           onClick={handleConnect}
@@ -56,7 +71,7 @@ export const ConnectWallet = () => {
               className={styles.signInLabel}
               data-hidden={!isSigningIn || undefined}
             >
-              <RIcon aria-hidden name="dots" size="small" />
+              <RIcon aria-hidden isBouncing name="dots" size="small" />
               <RText color="neutral-black" size="body-s" weight="medium">
                 Signing in
               </RText>
