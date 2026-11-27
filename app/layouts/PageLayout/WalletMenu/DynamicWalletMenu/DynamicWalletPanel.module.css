@@ -490,6 +490,11 @@
   margin-top: auto;
 }
 
+/* Withdraw: the description centred, like Deposit's */
+.withdrawDescription {
+  text-align: center;
+}
+
 /* Deposit: the modal's address field at its own S-M (14px); a long
    address breaks onto a second line rather than overflow the panel */
 .depositBody button {

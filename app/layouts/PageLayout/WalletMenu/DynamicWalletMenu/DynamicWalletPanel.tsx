@@ -87,7 +87,11 @@ export function DynamicWalletPanel({
             />
             <WithdrawFlow
               header={
-                <RText color="neutral-700" size="body-sm">
+                <RText
+                  className={styles.withdrawDescription}
+                  color="neutral-700"
+                  size="body-sm"
+                >
                   Transfer funds from one Mavryk Wallet to another
                 </RText>
               }
