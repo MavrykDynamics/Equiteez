@@ -71,12 +71,10 @@ describe("SigningKey", () => {
     mocks.isKyced = true;
     await render();
 
-    expect(text()).toContain("Signing key active");
     expect(text()).toContain(ADDRESS);
     expect(text()).toContain(PUBLIC_KEY);
     expect(text()).toContain("Dynamic (email sign-in)");
     expect(text()).toContain("name@mail.com");
-    expect(text()).toContain("Approved for this address");
     // The public key has no Nexus page: only the address links there
     expect(container.querySelectorAll("a")).toHaveLength(1);
   });
@@ -91,7 +89,6 @@ describe("SigningKey", () => {
 
     expect(text()).toContain("Mavryk Wallet");
     expect(text()).not.toContain("Login email");
-    expect(text()).toContain("Not verified");
   });
 
   it("signs out", async () => {

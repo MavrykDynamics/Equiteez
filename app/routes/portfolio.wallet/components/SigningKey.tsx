@@ -7,11 +7,9 @@ import type { ReactNode } from "react";
 
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
-import { RTooltip } from "~/lib/atoms/RTooltip";
 import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
 import { NETWORK_LABEL } from "~/layouts/PageLayout/WalletMenu/DynamicWalletMenu/parts";
-import { useKycStatus } from "~/lib/kyc/useKycStatus";
 import { useUserContext } from "~/providers/UserProvider/user.provider";
 import { useWalletContext } from "~/providers/WalletProvider/wallet.provider";
 import { OperationHash } from "~/routes/portfolio.activity/components/TransactionHistoryTab/OperationHash";
@@ -39,28 +37,6 @@ export function SigningKey() {
         >
           Signing key
         </RHeading>
-        {identity ? (
-          <span
-            className={`${styles.status} ${styles.statusLarge}`}
-            data-tone="success"
-          >
-            <RText size="body-sm" weight="medium">
-              Signing key active
-            </RText>
-            <RTooltip
-              content="This wallet is registered as your signing key. Anything you confirm on Equiteez is signed with it."
-              maxWidth={248}
-            >
-              <span className={styles.statusInfo}>
-                <RIcon
-                  aria-label="About the signing key"
-                  name="info-circle"
-                  size="small"
-                />
-              </span>
-            </RTooltip>
-          </span>
-        ) : null}
       </div>
 
       <dl className={styles.details}>
@@ -90,9 +66,6 @@ export function SigningKey() {
           <Detail label="Login email">{identity.email}</Detail>
         ) : null}
         <Detail label="Network">{NETWORK_LABEL}</Detail>
-        <Detail label="Verification">
-          <Verification />
-        </Detail>
       </dl>
 
       <div className={styles.sectionFooter}>
@@ -107,23 +80,6 @@ export function SigningKey() {
         </RButton>
       </div>
     </section>
-  );
-}
-
-function Verification() {
-  const status = useKycStatus();
-
-  if (status.hasError) return <>Couldn&apos;t load</>;
-  if (!status.isLoaded) return <span className={styles.status}>Checking…</span>;
-
-  return status.isKyced ? (
-    <span className={styles.status} data-tone="success">
-      Approved for this address
-    </span>
-  ) : (
-    <span className={styles.status} data-tone="warning">
-      Not verified
-    </span>
   );
 }
 
