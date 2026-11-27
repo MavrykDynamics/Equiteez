@@ -498,11 +498,12 @@ export function ConnectWalletModal({
     Math.ceil((resendAvailableAt - now) / 1000)
   );
 
+  // Figma: only "Unlock on a new device" has a back arrow (to another
+  // email); the code step has its own "Use a different email" link. The
+  // email step goes back to the wallet choice when that choice is on.
   const back = isBusy
     ? undefined
-    : step.name === "code" ||
-        step.name === "unlock" ||
-        step.name === "second-factor"
+    : step.name === "unlock"
       ? handleUseDifferentEmail
       : step.name === "email" && canChooseWallet
         ? () => setStep({ name: "choose" })
