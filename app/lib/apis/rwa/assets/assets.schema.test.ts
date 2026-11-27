@@ -179,6 +179,15 @@ describe("asset profile content", () => {
     gallery: [],
   };
 
+  it("treats an omitted gallery as empty", () => {
+    const parsed = AssetSchema.shape.profile.parse({
+      ...profile,
+      gallery: undefined,
+    });
+
+    expect(parsed.gallery).toEqual([]);
+  });
+
   it("omits absent optional content", () => {
     const parsed = AssetSchema.shape.profile.parse(profile);
 

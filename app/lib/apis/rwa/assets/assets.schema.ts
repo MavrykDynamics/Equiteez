@@ -138,7 +138,8 @@ const AssetProfileSchema = z.object({
   status: z.string(),
   lifecycle: z.string(),
   image_url: z.string().optional(),
-  gallery: z.array(z.object({ kind: z.string(), url: z.string() })),
+  // The API omits `gallery` for assets without one; an empty gallery renders nothing.
+  gallery: z.array(z.object({ kind: z.string(), url: z.string() })).default([]),
   features: z.array(AssetProfileItemSchema).optional(),
   amenities: z.array(AssetProfileItemSchema).optional(),
   why_invest: AssetContentItemsSchema,
