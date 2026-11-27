@@ -43,6 +43,7 @@ export function SigningKey() {
         {address ? (
           <Detail label="Address">
             <OperationHash
+              className={styles.hash}
               copyLabel="Copy address"
               copyIconSize="medium"
               display="full"
@@ -53,6 +54,7 @@ export function SigningKey() {
         {identity?.publicKey ? (
           <Detail label="Public key">
             <OperationHash
+              className={styles.hash}
               copyLabel="Copy public key"
               copyIconSize="medium"
               display="full"
