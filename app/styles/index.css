@@ -38,6 +38,17 @@
   font-display: swap;
 }
 
+/* Password mask: the browser's mask dots (• ● ∙ ◦) drawn as Inter's
+   asterisk, as in Figma; every other character falls back to Inter */
+@font-face {
+  font-family: "RPasswordMask";
+  src: url("/fonts/RPasswordMask/RPasswordMask.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+  unicode-range: U+2022, U+2219, U+25CF, U+25E6;
+}
+
 @font-face {
   font-family: "Inter";
   src: url("/fonts/Inter/Inter-Regular.woff2") format("woff2");

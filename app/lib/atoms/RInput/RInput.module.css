@@ -38,6 +38,11 @@
   line-height: var(--r-line-height-body-sm);
 }
 
+/* Figma shows a typed password as asterisks, not dots */
+.input[type="password"] {
+  font-family: "RPasswordMask", var(--r-font-body);
+}
+
 .input::placeholder {
   color: var(--r-color-neutral-500);
   opacity: 1;
