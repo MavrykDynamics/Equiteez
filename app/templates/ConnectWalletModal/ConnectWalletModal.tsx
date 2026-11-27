@@ -1104,7 +1104,11 @@ function AddressField({ address }: { address: string }) {
           onClick={handleCopy}
           type="button"
         >
-          <RIcon aria-hidden name={isCopied ? "check" : "copy"} size="small" />
+          <RIcon
+            aria-hidden
+            name={isCopied ? "check" : "copy-16"}
+            size="small"
+          />
         </button>
       </div>
     </div>

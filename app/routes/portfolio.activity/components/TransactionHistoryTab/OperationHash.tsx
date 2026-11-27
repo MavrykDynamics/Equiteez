@@ -14,8 +14,8 @@ type OperationHashProps = {
   /** The copy tooltip: "Copy address" when the hash is an address */
   copyLabel?: string;
   /**
-   * "medium" draws the copy glyph at 12px (Figma Wallet → Signing key) while
-   * it keeps its 16px slot, so the row height and gaps stay the same
+   * "medium" draws Figma's 12px copy glyph (Wallet → Signing key, the wallet
+   * panel's asset sheet) in the same 16px slot, so the row keeps its size
    */
   copyIconSize?: RIconSize;
   display?: "full" | "short";
@@ -110,17 +110,11 @@ export function OperationHash({
         <RText className={styles.hashText} size="body-sm">
           {display === "short" ? getShortHash(operationHash) : operationHash}
         </RText>
-        <span
-          className={clsx(
-            styles.action,
-            copyIconSize === "medium" && styles.actionLargeIcon
-          )}
-        >
+        <span className={styles.action}>
+          {/* "medium": Figma's 12px copy glyph (copy-16) in the same slot */}
           <RIcon
-            name="copy"
-            size={copyIconSize}
-            // 1px line at either size, like the 16px icons next to it
-            {...(copyIconSize === "medium" ? { strokeWidth: 1 } : {})}
+            name={copyIconSize === "medium" ? "copy-16" : "copy"}
+            size="small"
           />
         </span>
       </div>
