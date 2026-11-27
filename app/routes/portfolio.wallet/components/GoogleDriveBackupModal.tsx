@@ -14,12 +14,13 @@ import { GoogleDriveAccessError } from "~/providers/WalletProvider/dynamic/googl
 
 import type { useGoogleDriveBackup } from "./useGoogleDriveBackup";
 import styles from "./WalletModal.module.css";
+import { RPopupHeader } from "~/lib/molecules/RPopupHeader";
+
 import {
   PasswordField,
   WalletModal,
   WalletModalActions,
   WalletModalError,
-  WalletModalHeader,
   WalletModalNotice,
   WalletModalSuccess,
 } from "./WalletModalParts";
@@ -111,7 +112,7 @@ function GoogleDriveBackupContent({
 
   return (
     <form className={styles.content} noValidate onSubmit={handleSubmit}>
-      <WalletModalHeader
+      <RPopupHeader
         description="Back up your account data securely to Google Drive so you can restore access when needed."
         isDisabled={isBackingUp}
         onClose={onClose}

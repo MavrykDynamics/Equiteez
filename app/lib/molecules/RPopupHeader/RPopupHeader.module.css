@@ -1,0 +1,98 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* Title → description: 12px (A and B) */
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-space-3);
+}
+
+/* A: back slot · title · close, 28px tall (the h6 line) */
+.titleBar {
+  display: grid;
+  grid-template-columns: var(--r-size-icon-medium) minmax(0, 1fr) var(
+      --r-size-icon-medium
+    );
+  align-items: center;
+  gap: var(--r-space-2);
+}
+
+.title {
+  letter-spacing: 0.2px;
+  text-align: center;
+}
+
+.description {
+  text-align: center;
+}
+
+/* B: 24px bar, the circle right under it (0px) */
+.navBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--r-size-icon-medium);
+}
+
+/* B: circle → title 24px */
+.iconBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--r-space-6);
+}
+
+/* 48px: 24px icon, 12px padding */
+.iconCircle {
+  display: flex;
+  padding: var(--r-space-3);
+  color: var(--r-color-neutral-black);
+  background: rgba(204, 204, 204, 0.25);
+  border-radius: var(--r-radius-pill);
+}
+
+.iconMuted {
+  color: var(--r-color-neutral-700);
+}
+
+.iconYellow {
+  background: rgba(242, 209, 107, 0.25);
+}
+
+.iconGreen {
+  color: var(--r-color-green-700);
+  background: rgba(122, 201, 157, 0.25);
+}
+
+.emptySlot {
+  width: var(--r-size-icon-medium);
+  height: var(--r-size-icon-medium);
+}
+
+.iconButton {
+  display: grid;
+  width: var(--r-size-icon-medium);
+  height: var(--r-size-icon-medium);
+  padding: 0;
+  place-items: center;
+  color: var(--r-color-neutral-black);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-radius-xs);
+  cursor: pointer;
+}
+
+.iconButton:disabled {
+  color: var(--r-color-neutral-500);
+  cursor: default;
+}
+
+.iconButton:focus-visible {
+  outline: none;
+  box-shadow: var(--r-focus-ring);
+}

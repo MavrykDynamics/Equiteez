@@ -14,13 +14,14 @@ import {
 
 import type { useWalletPassword } from "./useWalletPassword";
 import styles from "./WalletModal.module.css";
+import { RPopupHeader } from "~/lib/molecules/RPopupHeader";
+
 import {
   PasswordField,
   WalletModal,
   WalletModalActions,
   WalletModalCheckbox,
   WalletModalError,
-  WalletModalHeader,
   WalletModalWarning,
 } from "./WalletModalParts";
 
@@ -112,7 +113,7 @@ function WalletPasswordContent({
 
   return (
     <form className={styles.content} noValidate onSubmit={handleSubmit}>
-      <WalletModalHeader
+      <RPopupHeader
         description="You'll enter it to restore your wallet on a new device or after a long break."
         isDisabled={isSaving}
         onClose={onClose}
@@ -151,19 +152,20 @@ function WalletPasswordContent({
         />
       </div>
 
-      <WalletModalWarning title="Nobody can reset this password, including Equiteez and Dynamic.">
-        If you lose it, you won&apos;t be able to restore your wallet on a new
-        device.
-      </WalletModalWarning>
-
-      {hasPassword ? null : (
-        <WalletModalCheckbox
-          checked={isAcknowledged}
-          onChange={setIsAcknowledged}
-        >
-          I&apos;ve saved this password somewhere safe.
-        </WalletModalCheckbox>
-      )}
+      <div className={styles.group}>
+        <WalletModalWarning title="Nobody can reset this password, including Equiteez and Dynamic.">
+          If you lose it, you won&apos;t be able to restore your wallet on a new
+          device.
+        </WalletModalWarning>
+        {hasPassword ? null : (
+          <WalletModalCheckbox
+            checked={isAcknowledged}
+            onChange={setIsAcknowledged}
+          >
+            I&apos;ve saved this password somewhere safe.
+          </WalletModalCheckbox>
+        )}
+      </div>
 
       <WalletModalError message={error} />
 

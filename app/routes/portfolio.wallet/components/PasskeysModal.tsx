@@ -12,11 +12,12 @@ import { formatDayMonthYear } from "~/lib/utils/date";
 
 import type { DynamicPasskey, usePasskeys } from "./usePasskeys";
 import styles from "./WalletModal.module.css";
+import { RPopupHeader } from "~/lib/molecules/RPopupHeader";
+
 import {
   WalletModal,
   WalletModalActions,
   WalletModalError,
-  WalletModalHeader,
   WalletModalSuccess,
 } from "./WalletModalParts";
 
@@ -137,7 +138,7 @@ function PasskeysContent({
   if (step.name === "remove") {
     return (
       <div className={styles.content}>
-        <WalletModalHeader
+        <RPopupHeader
           description="Are you sure you want to remove this passkey? You will no longer be able to use it to sign in."
           isDisabled={isBusy}
           onBack={() =>
@@ -164,7 +165,7 @@ function PasskeysContent({
   if (passkeys?.length === 0) {
     return (
       <div className={styles.content}>
-        <WalletModalHeader
+        <RPopupHeader
           description="Create a passkey to securely access your account using your device's biometrics, PIN, or screen lock."
           isDisabled={isAdding}
           onClose={onClose}
@@ -183,7 +184,7 @@ function PasskeysContent({
 
   return (
     <div className={styles.content}>
-      <WalletModalHeader
+      <RPopupHeader
         description="Review and manage your saved passkeys"
         onClose={onClose}
         title="Manage Passkeys"

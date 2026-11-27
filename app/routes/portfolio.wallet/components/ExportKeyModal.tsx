@@ -16,13 +16,14 @@ import {
 } from "~/providers/WalletProvider/dynamic/dynamic.errors";
 
 import styles from "./WalletModal.module.css";
+import { RPopupHeader } from "~/lib/molecules/RPopupHeader";
+
 import {
   PasswordField,
   WalletModal,
   WalletModalActions,
   WalletModalCheckbox,
   WalletModalError,
-  WalletModalHeader,
   WalletModalWarning,
 } from "./WalletModalParts";
 
@@ -108,7 +109,7 @@ function ExportKeyContent({
     <div className={styles.content}>
       {isKeyShown ? (
         <>
-          <WalletModalHeader
+          <RPopupHeader
             description="Your private key is ready. Copy it and store it somewhere safe. Never share it with anyone."
             onClose={onClose}
             title="Your Private Key"
@@ -120,20 +121,25 @@ function ExportKeyContent({
         </>
       ) : (
         <>
-          <WalletModalHeader
+          <RPopupHeader
             description="Your private key gives full access to your wallet and all its assets. Make sure you understand how to keep it safe before proceeding."
             isDisabled={isOpening}
             onClose={onClose}
             title="Export Private Key"
           />
-          <WalletModalWarning title="Keep your Private Key secure">
-            Never share your private key with anyone or store it in an unsecured
-            location. Anyone with access to it can fully control your wallet and
-            its funds.
-          </WalletModalWarning>
-          <WalletModalCheckbox checked={isConfirmed} onChange={setIsConfirmed}>
-            I understand the risks and will keep my private key safe.
-          </WalletModalCheckbox>
+          <div className={styles.group}>
+            <WalletModalWarning title="Keep your Private Key secure">
+              Never share your private key with anyone or store it in an
+              unsecured location. Anyone with access to it can fully control
+              your wallet and its funds.
+            </WalletModalWarning>
+            <WalletModalCheckbox
+              checked={isConfirmed}
+              onChange={setIsConfirmed}
+            >
+              I understand the risks and will keep my private key safe.
+            </WalletModalCheckbox>
+          </div>
           {hasPassword ? (
             <PasswordField
               autoComplete="current-password"

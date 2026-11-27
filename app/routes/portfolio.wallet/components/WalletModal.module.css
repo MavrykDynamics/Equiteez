@@ -27,97 +27,19 @@
   outline: none;
 }
 
-/* 32px top and bottom, 44px sides; blocks 24px apart */
-.content,
-.successContent {
+/* 32px top and bottom, 44px sides; sections 24px apart */
+.content {
   display: flex;
   flex-direction: column;
   gap: var(--r-space-6);
-  padding: var(--r-space-8) 44px;
+  padding: var(--r-space-8) var(--r-space-11);
 }
 
-/* Back · title · close, the description 12px under it */
-.header {
+/* A message box with its checkbox: one section, 16px apart */
+.group {
   display: flex;
   flex-direction: column;
-  gap: var(--r-space-3);
-}
-
-.titleRow {
-  display: grid;
-  grid-template-columns: var(--r-size-icon-medium) minmax(0, 1fr) var(
-      --r-size-icon-medium
-    );
-  align-items: center;
-  gap: var(--r-space-2);
-}
-
-.title {
-  letter-spacing: 0.2px;
-  text-align: center;
-}
-
-.description {
-  text-align: center;
-}
-
-.iconButton {
-  display: grid;
-  width: var(--r-size-icon-medium);
-  height: var(--r-size-icon-medium);
-  padding: 0;
-  place-items: center;
-  color: var(--r-color-neutral-black);
-  background: transparent;
-  border: 0;
-  border-radius: var(--r-radius-xs);
-  cursor: pointer;
-}
-
-.iconButton:disabled {
-  color: var(--r-color-neutral-500);
-  cursor: default;
-}
-
-.iconButton:focus-visible {
-  outline: none;
-  box-shadow: var(--r-focus-ring);
-}
-
-/* Success: close alone at the top right, then the green check */
-.successContent {
-  gap: 0;
-}
-
-.successCloseRow {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.successBody,
-.successHeader {
-  display: flex;
-  flex-direction: column;
-  gap: var(--r-space-6);
-}
-
-.successHeader {
-  align-items: center;
-  text-align: center;
-}
-
-.successIcon {
-  display: flex;
-  padding: var(--r-space-3);
-  color: var(--r-color-green-700);
-  background: rgba(122, 201, 157, 0.25);
-  border-radius: var(--r-radius-pill);
-}
-
-.successText {
-  display: flex;
-  flex-direction: column;
-  gap: var(--r-space-3);
+  gap: var(--r-space-4);
 }
 
 /* Yellow and grey boxes: 16px icon 3px down, 8px to the text */
@@ -149,12 +71,12 @@
   gap: var(--r-space-1);
 }
 
-/* 24px box, 10px to the text */
+/* 24px box, 8px to the label */
 .confirm {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--r-space-2);
   cursor: pointer;
 }
 
@@ -225,7 +147,7 @@
   width: 100%;
 }
 
-/* Code steps: the cells, then the hint or the error under them */
+/* Code steps: the cells, then the hint, the error or resend 12px under them */
 .codeForm {
   display: flex;
   flex-direction: column;
@@ -236,14 +158,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--r-space-4);
+  gap: var(--r-space-3);
   text-align: center;
 }
 
 /* "Resend code in 0:24": left, under the cells */
 .resendRow {
   display: flex;
-  margin-top: calc(-1 * var(--r-space-2));
+  align-self: stretch;
 }
 
 .textButton {
@@ -286,12 +208,12 @@
   cursor: pointer;
 }
 
-/* Authenticator: QR code, then the key to type in */
+/* Authenticator: QR code, the hint 12px under it, then the key */
 .qrBlock {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--r-space-6);
+  gap: var(--r-space-3);
 }
 
 .keyBlock {
@@ -394,8 +316,7 @@
 
 /* Phones: 16px sides */
 @media (--media-phone-max) {
-  .content,
-  .successContent {
+  .content {
     padding: var(--r-space-6) var(--r-space-4);
   }
 }

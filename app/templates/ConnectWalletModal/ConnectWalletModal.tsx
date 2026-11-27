@@ -29,10 +29,10 @@ import {
 import { HashShortView } from "~/lib/atoms/HashShortView";
 import { RButton } from "~/lib/atoms/RButton";
 import { RChip } from "~/lib/atoms/RChip/RChip";
-import { RIcon, type RIconName } from "~/lib/atoms/RIcon";
+import { RIcon } from "~/lib/atoms/RIcon";
 import { RInput } from "~/lib/atoms/RInput/RInput";
-import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { RPopupHeader } from "~/lib/molecules/RPopupHeader";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import { formatDayMonthYear } from "~/lib/utils/date";
 import { useIsMobileViewport } from "~/lib/organisms/OrderBookPopup/OrderBookPopup";
@@ -508,6 +508,9 @@ export function ConnectWalletModal({
         ? () => setStep({ name: "choose" })
         : undefined;
 
+  // Back (when the step has one) and close live in every step's header
+  const nav = { onBack: back, onClose: close };
+
   return (
     <CustomPopup
       className={isMobile ? styles.sheet : styles.modal}
@@ -516,31 +519,11 @@ export function ConnectWalletModal({
       isOpen={isOpen}
       onRequestClose={close}
     >
-      <div className={styles.topRow}>
-        {back && (
-          <button
-            aria-label="Back"
-            className={styles.iconButton}
-            onClick={back}
-            type="button"
-          >
-            <RIcon name="arrow-long-left" size="medium" />
-          </button>
-        )}
-        <button
-          aria-label="Close"
-          className={clsx(styles.iconButton, styles.closeButton)}
-          onClick={close}
-          type="button"
-        >
-          <RIcon name="close" size="medium" />
-        </button>
-      </div>
-
       <div aria-busy={isBusy} className={styles.content} ref={contentRef}>
         {step.name === "choose" && (
           <>
-            <Header
+            <RPopupHeader
+              {...nav}
               title="Connect wallet"
               description="Choose how you want to sign in to Equiteez."
             />
@@ -563,7 +546,8 @@ export function ConnectWalletModal({
 
         {step.name === "email" && (
           <form className={styles.form} noValidate onSubmit={submitEmail}>
-            <Header
+            <RPopupHeader
+              {...nav}
               title="Sign In"
               description="Enter your email and we’ll send you a 6-digit code. New here? We’ll create your account automatically."
             />
@@ -591,7 +575,7 @@ export function ConnectWalletModal({
                 className={styles.primaryButton}
                 disabled={!email.trim() || isBusy}
                 isLoading={busy === "email" || busy === "start"}
-                size="large"
+                size="medium"
                 tone="black"
                 type="submit"
                 variant="primary"
@@ -605,7 +589,7 @@ export function ConnectWalletModal({
                 iconLeft={<RGoogleIcon />}
                 isLoading={busy === "google"}
                 onClick={continueWithGoogle}
-                size="large"
+                size="medium"
                 tone="black"
                 type="button"
                 variant="secondary"
@@ -627,21 +611,18 @@ export function ConnectWalletModal({
             noValidate
             onSubmit={submitSecondFactor}
           >
-            <div className={styles.heroBlock}>
-              <span className={styles.heroIcon}>
-                <RIcon aria-hidden name="lock" size="medium" />
-              </span>
-              <Header
-                title="Confirm Your Sign-In"
-                description={
-                  !hasCodeFactor(step.methods)
-                    ? "Use the passkey saved for this account."
-                    : step.isRecoveryCode
-                      ? "Enter one of the recovery codes you saved when you set up your authenticator app."
-                      : "Enter the 6-digit code from your authenticator app."
-                }
-              />
-            </div>
+            <RPopupHeader
+              {...nav}
+              icon="lock"
+              title="Confirm Your Sign-In"
+              description={
+                !hasCodeFactor(step.methods)
+                  ? "Use the passkey saved for this account."
+                  : step.isRecoveryCode
+                    ? "Enter one of the recovery codes you saved when you set up your authenticator app."
+                    : "Enter the 6-digit code from your authenticator app."
+              }
+            />
             {hasCodeFactor(step.methods) ? (
               <>
                 {step.isRecoveryCode ? (
@@ -683,13 +664,27 @@ export function ConnectWalletModal({
                         : secondFactorCode.length < CODE_LENGTH)
                     }
                     isLoading={busy === "second-factor"}
-                    size="large"
+                    size="medium"
                     tone="black"
                     type="submit"
                     variant="primary"
                   >
                     Confirm
                   </RButton>
+                  {step.methods.hasPasskey ? (
+                    <RButton
+                      className={styles.primaryButton}
+                      disabled={isBusy}
+                      isLoading={busy === "passkey"}
+                      onClick={() => passSecondFactor({ kind: "passkey" })}
+                      size="medium"
+                      tone="black"
+                      type="button"
+                      variant="secondary"
+                    >
+                      Use A Passkey
+                    </RButton>
+                  ) : null}
                   <TextButton disabled={isBusy} onClick={toggleRecoveryCode}>
                     {step.isRecoveryCode
                       ? "Use the authenticator app"
@@ -698,36 +693,35 @@ export function ConnectWalletModal({
                 </div>
               </>
             ) : (
-              <ErrorText centered message={step.error} />
+              <>
+                <ErrorText centered message={step.error} />
+                {step.methods.hasPasskey ? (
+                  <RButton
+                    className={styles.primaryButton}
+                    disabled={isBusy}
+                    isLoading={busy === "passkey"}
+                    onClick={() => passSecondFactor({ kind: "passkey" })}
+                    size="medium"
+                    tone="black"
+                    type="button"
+                    variant="primary"
+                  >
+                    Use A Passkey
+                  </RButton>
+                ) : null}
+              </>
             )}
-            {step.methods.hasPasskey ? (
-              <RButton
-                className={styles.primaryButton}
-                disabled={isBusy}
-                isLoading={busy === "passkey"}
-                onClick={() => passSecondFactor({ kind: "passkey" })}
-                size="large"
-                tone="black"
-                type="button"
-                variant={hasCodeFactor(step.methods) ? "secondary" : "primary"}
-              >
-                Use A Passkey
-              </RButton>
-            ) : null}
           </form>
         )}
 
         {step.name === "unlock" && (
           <form className={styles.form} noValidate onSubmit={submitPassword}>
-            <div className={styles.heroBlock}>
-              <span className={styles.heroIcon}>
-                <RIcon aria-hidden name="lock" size="medium" />
-              </span>
-              <Header
-                title="Unlock Your Account On This Device"
-                description="This is your first time signing in on this device. Enter your account password to restore your account here."
-              />
-            </div>
+            <RPopupHeader
+              {...nav}
+              icon="lock"
+              title="Unlock Your Account On This Device"
+              description="This is your first time signing in on this device. Enter your account password to restore your account here."
+            />
             <AccountCard wallet={step.wallet} />
             <div className={styles.field}>
               <label className={styles.label} htmlFor={passwordInputId}>
@@ -749,7 +743,7 @@ export function ConnectWalletModal({
               className={styles.primaryButton}
               disabled={!password || isBusy}
               isLoading={busy === "password"}
-              size="large"
+              size="medium"
               tone="black"
               type="submit"
               variant="primary"
@@ -767,7 +761,8 @@ export function ConnectWalletModal({
 
         {step.name === "code" && (
           <form className={styles.form} noValidate onSubmit={submitCode}>
-            <Header
+            <RPopupHeader
+              {...nav}
               title="Enter Your Code"
               description={
                 <>
@@ -790,7 +785,7 @@ export function ConnectWalletModal({
                 className={styles.primaryButton}
                 disabled={code.length < CODE_LENGTH || isBusy}
                 isLoading={busy === "code"}
-                size="large"
+                size="medium"
                 tone="black"
                 type="submit"
                 variant="primary"
@@ -823,11 +818,12 @@ export function ConnectWalletModal({
 
         {step.name === "creating" && (
           <div aria-live="polite" className={styles.form}>
-            <StatusHeader
+            <RPopupHeader
+              {...nav}
               description="Your account is being created. This may take a few moments, so please keep this window open."
               icon="loading-progress"
+              iconTone="yellow"
               title="Creating Your Account"
-              tone="yellow"
             />
             <CancelButton onClick={close} />
           </div>
@@ -835,13 +831,15 @@ export function ConnectWalletModal({
 
         {step.name === "restoring" && (
           <div aria-live="polite" className={styles.form}>
-            <StatusHeader
+            <RPopupHeader
+              {...nav}
               description={`We found the account for ${
                 step.account.email ?? email.trim()
               }. Nothing new is created.`}
               icon="refresh"
+              iconTone="muted"
+              isIconSpinning
               title="Restoring Your Account"
-              tone="neutral"
             />
             <AccountCard
               wallet={{
@@ -881,11 +879,12 @@ export function ConnectWalletModal({
 
         {step.name === "ready" && (
           <div className={styles.form}>
-            <StatusHeader
+            <RPopupHeader
+              {...nav}
               description="This is your Mavryk address, and only you can sign transactions from it."
               icon="check"
+              iconTone="green"
               title="Your Account Is Ready"
-              tone="green"
             />
             <AddressField address={step.address} />
             <RButton
@@ -902,7 +901,8 @@ export function ConnectWalletModal({
 
         {step.name === "select-wallet" && (
           <>
-            <Header
+            <RPopupHeader
+              {...nav}
               title="Choose a wallet"
               description="Your account has more than one wallet. Pick the one to use."
             />
@@ -923,12 +923,16 @@ export function ConnectWalletModal({
 
         {step.name === "failed" && (
           <div className={styles.form}>
-            <Header title="Couldn't sign in" description={step.message} />
+            <RPopupHeader
+              {...nav}
+              title="Couldn't sign in"
+              description={step.message}
+            />
             <RButton
               className={styles.primaryButton}
               isLoading={busy === "start"}
               onClick={startEmail}
-              size="large"
+              size="medium"
               tone="black"
               variant="primary"
             >
@@ -955,25 +959,6 @@ function formatCountdown(totalSeconds: number) {
   const seconds = totalSeconds % 60;
 
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
-}
-
-function Header({
-  title,
-  description,
-}: {
-  title: string;
-  description: ReactNode;
-}) {
-  return (
-    <header className={styles.header}>
-      <RHeading size="h6" weight="medium">
-        {title}
-      </RHeading>
-      <RText color="neutral-700" size="body-sm">
-        {description}
-      </RText>
-    </header>
-  );
 }
 
 function OptionButton({
@@ -1062,41 +1047,6 @@ function AccountCard({
           </RText>
         ) : null}
       </div>
-    </div>
-  );
-}
-
-type StatusTone = "yellow" | "green" | "neutral";
-
-const STATUS_TONE_CLASS: Record<StatusTone, string> = {
-  yellow: styles.heroIconYellow,
-  green: styles.heroIconGreen,
-  neutral: styles.heroIconNeutral,
-};
-
-/** Icon badge over the heading of the account set-up steps */
-function StatusHeader({
-  icon,
-  tone,
-  title,
-  description,
-}: {
-  icon: RIconName;
-  tone: StatusTone;
-  title: string;
-  description: ReactNode;
-}) {
-  return (
-    <div className={styles.heroBlock}>
-      <span className={clsx(styles.heroIcon, STATUS_TONE_CLASS[tone])}>
-        <RIcon
-          aria-hidden
-          isSpinning={tone === "neutral"}
-          name={icon}
-          size="medium"
-        />
-      </span>
-      <Header title={title} description={description} />
     </div>
   );
 }

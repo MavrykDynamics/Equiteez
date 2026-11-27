@@ -1,8 +1,8 @@
 /**
  * Shared pieces of the Wallet page's Security modals (Figma 8131:518,
- * "Security – …"): the popup, the back · title · close header, the warning
- * and notice boxes, the acknowledgment checkbox, the password field and the
- * green-check success screen.
+ * "Security – …"): the popup, the warning and notice boxes, the
+ * acknowledgment checkbox, the password field and the green-check success
+ * screen. The header is the shared RPopupHeader.
  */
 import clsx from "clsx";
 import { useId, useSyncExternalStore, type ReactNode } from "react";
@@ -12,8 +12,8 @@ import CheckboxUnchecked from "app/icons/checkbox-unchecked.svg?react";
 import { RButton } from "~/lib/atoms/RButton";
 import { RIcon } from "~/lib/atoms/RIcon";
 import { RInput } from "~/lib/atoms/RInput/RInput";
-import { RHeading } from "~/lib/atoms/RTypography/RHeading";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { RPopupHeader } from "~/lib/molecules/RPopupHeader";
 import CustomPopup from "~/lib/organisms/CustomPopup/CustomPopup";
 import {
   getPendingIdentityCheck,
@@ -60,75 +60,6 @@ export function WalletModal({
     >
       {children}
     </CustomPopup>
-  );
-}
-
-/** Back (optional) · title · close, then the description 12px under it */
-export function WalletModalHeader({
-  title,
-  description,
-  onBack,
-  onClose,
-  isDisabled = false,
-}: {
-  title: string;
-  description?: ReactNode;
-  onBack?: () => void;
-  onClose: () => void;
-  /** Back and close are off while something runs */
-  isDisabled?: boolean;
-}) {
-  return (
-    <header className={styles.header}>
-      <div className={styles.titleRow}>
-        {onBack ? (
-          <button
-            aria-label="Back"
-            className={styles.iconButton}
-            disabled={isDisabled}
-            onClick={onBack}
-            type="button"
-          >
-            <RIcon name="arrow-long-left" size="medium" />
-          </button>
-        ) : (
-          <span aria-hidden="true" />
-        )}
-        <RHeading className={styles.title} size="h6" weight="medium">
-          {title}
-        </RHeading>
-        <CloseButton isDisabled={isDisabled} onClose={onClose} />
-      </div>
-      {description ? (
-        <RText
-          className={styles.description}
-          color="neutral-700"
-          size="body-sm"
-        >
-          {description}
-        </RText>
-      ) : null}
-    </header>
-  );
-}
-
-function CloseButton({
-  isDisabled,
-  onClose,
-}: {
-  isDisabled: boolean;
-  onClose: () => void;
-}) {
-  return (
-    <button
-      aria-label="Close"
-      className={styles.iconButton}
-      disabled={isDisabled}
-      onClick={onClose}
-      type="button"
-    >
-      <RIcon name="close" size="medium" />
-    </button>
   );
 }
 
@@ -302,7 +233,7 @@ export function WalletModalActions({
   );
 }
 
-/** Close at the top right, the green check, title, text and the buttons */
+/** Header B with the green check, then extra content and the buttons */
 export function WalletModalSuccess({
   title,
   description,
@@ -319,36 +250,25 @@ export function WalletModalSuccess({
   actions?: ReactNode;
 }) {
   return (
-    <div className={styles.successContent}>
-      <div className={styles.successCloseRow}>
-        <CloseButton isDisabled={false} onClose={onClose} />
-      </div>
-      <div className={styles.successBody}>
-        <div className={styles.successHeader}>
-          <span className={styles.successIcon}>
-            <RIcon aria-hidden="true" name="check" size="medium" />
-          </span>
-          <div className={styles.successText}>
-            <RHeading className={styles.title} size="h6" weight="medium">
-              {title}
-            </RHeading>
-            <RText color="neutral-700" size="body-sm">
-              {description}
-            </RText>
-          </div>
-        </div>
-        {children}
-        {actions ?? (
-          <RButton
-            className={styles.fullAction}
-            onClick={onClose}
-            size="medium"
-            tone="black"
-          >
-            OK
-          </RButton>
-        )}
-      </div>
+    <div className={styles.content}>
+      <RPopupHeader
+        description={description}
+        icon="check"
+        iconTone="green"
+        onClose={onClose}
+        title={title}
+      />
+      {children}
+      {actions ?? (
+        <RButton
+          className={styles.fullAction}
+          onClick={onClose}
+          size="medium"
+          tone="black"
+        >
+          OK
+        </RButton>
+      )}
     </div>
   );
 }

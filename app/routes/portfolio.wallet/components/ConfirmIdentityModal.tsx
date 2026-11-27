@@ -30,11 +30,12 @@ import {
 } from "~/templates/ConnectWalletModal/CodeInput";
 
 import styles from "./WalletModal.module.css";
+import { RPopupHeader } from "~/lib/molecules/RPopupHeader";
+
 import {
   WalletModal,
   WalletModalActions,
   WalletModalError,
-  WalletModalHeader,
 } from "./WalletModalParts";
 
 const TITLE = "Verify Your Identity";
@@ -240,7 +241,7 @@ function CodeMethod({
   if (!isSent) {
     return (
       <div className={styles.content}>
-        <WalletModalHeader
+        <RPopupHeader
           description="We'll email you a 6-digit code."
           isDisabled={isWorking}
           onClose={onCancel}
@@ -266,7 +267,7 @@ function CodeMethod({
         if (code.length === CODE_LENGTH) void handleConfirm();
       }}
     >
-      <WalletModalHeader
+      <RPopupHeader
         description={
           method.send ? (
             <>
@@ -284,25 +285,25 @@ function CodeMethod({
       <div className={styles.codeBlock}>
         <CodeInput invalid={Boolean(error)} onChange={setCode} value={code} />
         <WalletModalError message={error} />
+        {method.send ? (
+          <div className={styles.resendRow}>
+            {resend.seconds > 0 ? (
+              <RText color="neutral-700" size="body-sm">
+                Resend code in {formatCountdown(resend.seconds)}
+              </RText>
+            ) : (
+              <button
+                className={styles.textButton}
+                disabled={isWorking}
+                onClick={() => void handleSend()}
+                type="button"
+              >
+                Resend code
+              </button>
+            )}
+          </div>
+        ) : null}
       </div>
-      {method.send ? (
-        <div className={styles.resendRow}>
-          {resend.seconds > 0 ? (
-            <RText color="neutral-700" size="body-sm">
-              Resend code in {formatCountdown(resend.seconds)}
-            </RText>
-          ) : (
-            <button
-              className={styles.textButton}
-              disabled={isWorking}
-              onClick={() => void handleSend()}
-              type="button"
-            >
-              Resend code
-            </button>
-          )}
-        </div>
-      ) : null}
       <WalletModalActions
         confirmLabel="Confirm"
         isConfirmDisabled={code.length < CODE_LENGTH}
@@ -345,7 +346,7 @@ function PasskeyMethod({
 
   return (
     <div className={styles.content}>
-      <WalletModalHeader
+      <RPopupHeader
         description="Your browser will ask for a passkey saved for this account."
         isDisabled={isWorking}
         onClose={onCancel}
