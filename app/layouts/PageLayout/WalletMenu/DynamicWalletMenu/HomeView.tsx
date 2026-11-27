@@ -8,6 +8,7 @@ import { RIcon } from "~/lib/atoms/RIcon";
 import { RSkeleton } from "~/lib/atoms/RSkeleton";
 import { RTooltip } from "~/lib/atoms/RTooltip";
 import { RText } from "~/lib/atoms/RTypography/RText";
+import { toFiatPrice } from "~/lib/formaters/formaters";
 import { formatTime } from "~/lib/utils/date";
 import { usePortfolioContext } from "~/providers/PortfolioProvider/portfolio.provider";
 import { AssetIcon } from "~/templates/AssetIcon";
@@ -253,18 +254,12 @@ function AssetRow({
           )}
         </RText>
         <RText color="neutral-700" size="body-s">
-          {isValueHidden ? (
-            `$${HIDDEN_VALUE}`
-          ) : hasPrice(asset) && asset.valueUsd ? (
-            <>
-              $
-              <Money fiat tooltip={false}>
-                {asset.valueUsd}
-              </Money>
-            </>
-          ) : (
-            "No price"
-          )}
+          {isValueHidden
+            ? `$${HIDDEN_VALUE}`
+            : hasPrice(asset) && asset.valueUsd
+              ? // A tiny value keeps its digits: $0.00023, not $0.00
+                `$${toFiatPrice(asset.valueUsd)}`
+              : "No price"}
         </RText>
       </span>
     </button>
