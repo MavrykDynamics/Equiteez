@@ -99,12 +99,32 @@
   color: var(--r-color-neutral-600);
 }
 
-/* Back · title · close */
+/* Back · title · close (home, phones) or back · title · empty slot */
 .viewHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--r-space-1);
+}
+
+.headerSlot {
+  flex-shrink: 0;
+  width: var(--r-size-icon-medium);
+}
+
+.viewHeader .phoneClose {
+  display: none;
+}
+
+/* Phones: the full-screen panel needs its close on every view */
+@media (--media-phone-max) {
+  .viewHeader .phoneClose {
+    display: inline-grid;
+  }
+
+  .headerSlot {
+    display: none;
+  }
 }
 
 /* Home: portfolio card */

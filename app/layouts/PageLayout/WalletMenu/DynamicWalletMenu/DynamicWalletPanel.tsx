@@ -4,6 +4,7 @@
  * QR of the deposit modal's Receive tab) and Withdraw (the shared
  * WithdrawFlow), navigated inside the panel.
  */
+import clsx from "clsx";
 import { useState } from "react";
 
 import { RIcon } from "~/lib/atoms/RIcon";
@@ -101,6 +102,8 @@ export function DynamicWalletPanel({
   );
 }
 
+/** Back · title, as in Figma. Close only on phones, where the panel takes
+ *  the whole screen; on desktop an empty slot keeps the title centred */
 export function PanelHeader({
   title,
   onBack,
@@ -123,9 +126,10 @@ export function PanelHeader({
       <RText size="body-m" weight="medium">
         {title}
       </RText>
+      <span aria-hidden="true" className={styles.headerSlot} />
       <button
         aria-label="Close wallet"
-        className={styles.iconButton}
+        className={clsx(styles.iconButton, styles.phoneClose)}
         onClick={onClose}
         type="button"
       >
