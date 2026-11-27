@@ -118,13 +118,18 @@ export function AssetView({
             </Detail>
             <Detail label="Network">{NETWORK_LABEL}</Detail>
             <Detail label="Held At">
-              <OperationHash copyLabel="Copy address" operationHash={address} />
+              <OperationHash
+                copyIconSize="medium"
+                copyLabel="Copy address"
+                operationHash={address}
+              />
             </Detail>
           </>
         ) : (
           <>
             <Detail label="Asset Contract">
               <OperationHash
+                copyIconSize="medium"
                 copyLabel="Copy address"
                 operationHash={metadata.address}
               />
