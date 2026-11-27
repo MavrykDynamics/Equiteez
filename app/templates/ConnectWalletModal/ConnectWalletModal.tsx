@@ -550,7 +550,14 @@ export function ConnectWalletModal({
             <RPopupHeader
               {...nav}
               title="Sign In"
-              description="Enter your email and we’ll send you a 6-digit code. New here? We’ll create your account automatically."
+              description={
+                // Two centred lines, as in Figma
+                <>
+                  Enter your email and we’ll send you a 6-digit code. New here?{" "}
+                  <br />
+                  We’ll create your account automatically.
+                </>
+              }
             />
             <div className={styles.field}>
               <label className={styles.label} htmlFor={emailInputId}>
