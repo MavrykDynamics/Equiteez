@@ -818,8 +818,8 @@ export function ConnectWalletModal({
               </div>
             </div>
             <Note>
-              Can&apos;t find it? Check spam. After 3 tries, wait a few minutes
-              before the next one.
+              Can’t find the email? Check your spam folder. After 3 incorrect
+              attempts, you’ll need to wait a few minutes before trying again.
             </Note>
           </form>
         )}
